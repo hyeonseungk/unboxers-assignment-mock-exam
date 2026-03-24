@@ -8,6 +8,9 @@ import { StepOmrConcept } from "@/components/tutorial/StepOmrConcept";
 import { StepObjectivePractice } from "@/components/tutorial/StepObjectivePractice";
 import { StepSubjectivePractice } from "@/components/tutorial/StepSubjectivePractice";
 import { StepTimeWarning } from "@/components/tutorial/StepTimeWarning";
+import { StudentInfoModal } from "@/components/modal/StudentInfoModal";
+import { useExamStore } from "@/stores/useExamStore";
+import type { StudentInfo } from "@/lib/types/exam";
 
 const TOTAL_STEPS = 5;
 
@@ -17,15 +20,28 @@ function isInteractive(step: number) {
 
 export function TutorialPage() {
   const navigate = useNavigate();
+  const setStudentInfo = useExamStore((s) => s.setStudentInfo);
+  const resetExam = useExamStore((s) => s.resetExam);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [canGoNext, setCanGoNext] = useState(true);
+  const [showStudentInfoModal, setShowStudentInfoModal] = useState(false);
   const hasNavigated = useRef(false);
+
+  const handleStudentInfoSubmit = useCallback(
+    (info: StudentInfo) => {
+      resetExam();
+      setStudentInfo(info);
+      setShowStudentInfoModal(false);
+      navigate("/exam");
+    },
+    [navigate, setStudentInfo, resetExam],
+  );
 
   const goNext = useCallback(() => {
     if (currentStep >= TOTAL_STEPS - 1) {
-      // TODO: Show student info modal before navigating
-      navigate("/exam");
+      setShowStudentInfoModal(true);
       return;
     }
     hasNavigated.current = true;
@@ -33,7 +49,7 @@ export function TutorialPage() {
     const nextStep = currentStep + 1;
     setCurrentStep(nextStep);
     setCanGoNext(!isInteractive(nextStep));
-  }, [currentStep, navigate]);
+  }, [currentStep]);
 
   const goPrev = useCallback(() => {
     if (currentStep <= 0) return;
@@ -45,9 +61,8 @@ export function TutorialPage() {
   }, [currentStep]);
 
   const handleSkip = useCallback(() => {
-    // TODO: Show student info modal before navigating
-    navigate("/exam");
-  }, [navigate]);
+    setShowStudentInfoModal(true);
+  }, []);
 
   const handleStepComplete = useCallback((complete: boolean) => {
     setCanGoNext(complete);
@@ -96,6 +111,12 @@ export function TutorialPage() {
         onPrev={goPrev}
         onNext={goNext}
         onSkip={handleSkip}
+      />
+
+      <StudentInfoModal
+        isOpen={showStudentInfoModal}
+        onClose={() => setShowStudentInfoModal(false)}
+        onSubmit={handleStudentInfoSubmit}
       />
     </div>
   );
