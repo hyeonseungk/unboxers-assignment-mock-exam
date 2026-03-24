@@ -3,7 +3,9 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "pnpm --filter server dev",
+    "dev": "pnpm --filter server dev & pnpm --filter web dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:server": "pnpm --filter server dev",
     "db:generate": "pnpm --filter server db:generate",
     "db:push": "pnpm --filter server db:push",
     "db:seed": "pnpm --filter server db:seed"

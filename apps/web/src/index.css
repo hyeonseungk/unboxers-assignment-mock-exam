@@ -1,0 +1,348 @@
+/* ===================================================================
+   Design System — Mock Exam Web App
+   Tailwind CSS v4 + CSS Custom Properties
+   Light / Dark mode support via .dark class on <html>
+   =================================================================== */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+@import "tailwindcss";
+
+/* -------------------------------------------------------------------
+   1. Light Theme (default)
+   ------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  /* === Foreground (Text) === */
+  --text-primary: #0f172a;       /* Slate-900 */
+  --text-secondary: #475569;     /* Slate-600 */
+  --text-tertiary: #64748b;      /* Slate-500 */
+  --text-muted: #94a3b8;         /* Slate-400 */
+  --text-inverse: #ffffff;
+
+  /* === Background & Surface === */
+  --background: #ffffff;
+  --background-secondary: #f8fafc;  /* Slate-50 */
+  --surface: #ffffff;
+  --surface-secondary: #f8fafc;
+  --surface-elevated: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* === Accent (Blue) === */
+  --accent: #2563eb;             /* Blue-600 */
+  --accent-hover: #1d4ed8;       /* Blue-700 */
+  --accent-light: #eff6ff;       /* Blue-50 */
+  --accent-muted: #60a5fa;       /* Blue-400 */
+  --accent-foreground: #ffffff;
+
+  /* === Border / Line === */
+  --border: #e2e8f0;             /* Slate-200 */
+  --border-secondary: #cbd5e1;   /* Slate-300 */
+  --border-focus: #2563eb;       /* Blue-600 */
+
+  /* === Exam: Grading === */
+  --exam-correct: #059669;            /* Emerald-600 */
+  --exam-correct-light: #ecfdf5;      /* Emerald-50 */
+  --exam-correct-border: #a7f3d0;     /* Emerald-200 */
+  --exam-wrong: #dc2626;              /* Red-600 */
+  --exam-wrong-light: #fef2f2;        /* Red-50 */
+  --exam-wrong-border: #fecaca;       /* Red-200 */
+  --exam-unanswered: #f59e0b;         /* Amber-500 */
+  --exam-unanswered-light: #fffbeb;   /* Amber-50 */
+  --exam-unanswered-border: #fde68a;  /* Amber-200 */
+
+  /* === Exam: OMR Card === */
+  --omr-default: #f1f5f9;        /* Slate-100 */
+  --omr-default-border: #cbd5e1; /* Slate-300 */
+  --omr-selected: #2563eb;       /* Blue-600 */
+  --omr-selected-text: #ffffff;
+  --omr-selected-border: #1d4ed8; /* Blue-700 */
+  --omr-hover: #eff6ff;          /* Blue-50 */
+  --omr-hover-border: #93c5fd;   /* Blue-300 */
+  --omr-disabled: #f8fafc;       /* Slate-50 */
+  --omr-disabled-text: #94a3b8;  /* Slate-400 */
+
+  /* === Exam: Timer === */
+  --timer-default: #334155;      /* Slate-700 */
+  --timer-bar: #2563eb;          /* Blue-600 */
+  --timer-bar-track: #e2e8f0;    /* Slate-200 */
+  --timer-warning: #d97706;      /* Amber-600 */
+  --timer-danger: #dc2626;       /* Red-600 */
+
+  /* === Exam: Score & Result === */
+  --score-high: #059669;         /* Emerald-600 */
+  --score-mid: #2563eb;          /* Blue-600 */
+  --score-low: #dc2626;          /* Red-600 */
+  --score-bar: #2563eb;
+  --score-bar-bg: #f1f5f9;       /* Slate-100 */
+
+  /* === Exam: Question Navigation === */
+  --qnav-current: #2563eb;
+  --qnav-current-text: #ffffff;
+  --qnav-answered: #dbeafe;      /* Blue-100 */
+  --qnav-answered-text: #1d4ed8; /* Blue-700 */
+  --qnav-unanswered: #ffffff;
+  --qnav-unanswered-border: #cbd5e1;
+  --qnav-flagged: #fef3c7;       /* Amber-100 */
+  --qnav-flagged-border: #fbbf24; /* Amber-400 */
+
+  /* === Status === */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-200: #fecaca;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  --error-700: #b91c1c;
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-200: #fde68a;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+  --success-50: #ecfdf5;
+  --success-100: #d1fae5;
+  --success-500: #10b981;
+  --success-600: #059669;
+  --success-700: #047857;
+}
+
+/* -------------------------------------------------------------------
+   2. Dark Theme (.dark class on <html>)
+   Background/Surface/Text inverted, accent colors slightly brighter
+   ------------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+
+  /* === Foreground (Text) === */
+  --text-primary: #f1f5f9;       /* Slate-100 */
+  --text-secondary: #cbd5e1;     /* Slate-300 */
+  --text-tertiary: #94a3b8;      /* Slate-400 */
+  --text-muted: #64748b;         /* Slate-500 */
+  --text-inverse: #0f172a;       /* Slate-900 */
+
+  /* === Background & Surface === */
+  --background: #0f172a;         /* Slate-900 */
+  --background-secondary: #1e293b; /* Slate-800 */
+  --surface: #1e293b;            /* Slate-800 */
+  --surface-secondary: #334155;  /* Slate-700 */
+  --surface-elevated: #334155;   /* Slate-700 */
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* === Accent (Blue — slightly brighter) === */
+  --accent: #3b82f6;             /* Blue-500 */
+  --accent-hover: #2563eb;       /* Blue-600 */
+  --accent-light: #1e3a5f;       /* custom dark blue tint */
+  --accent-muted: #60a5fa;       /* Blue-400 */
+  --accent-foreground: #ffffff;
+
+  /* === Border / Line === */
+  --border: #334155;             /* Slate-700 */
+  --border-secondary: #475569;   /* Slate-600 */
+  --border-focus: #3b82f6;       /* Blue-500 */
+
+  /* === Exam: Grading (keep recognizable, adjust light backgrounds) === */
+  --exam-correct: #059669;
+  --exam-correct-light: #064e3b;       /* Emerald-900 */
+  --exam-correct-border: #065f46;      /* Emerald-800 */
+  --exam-wrong: #dc2626;
+  --exam-wrong-light: #450a0a;         /* Red-950 */
+  --exam-wrong-border: #7f1d1d;        /* Red-900 */
+  --exam-unanswered: #f59e0b;
+  --exam-unanswered-light: #451a03;    /* Amber-950 */
+  --exam-unanswered-border: #78350f;   /* Amber-900 */
+
+  /* === Exam: OMR Card === */
+  --omr-default: #334155;         /* Slate-700 */
+  --omr-default-border: #475569;  /* Slate-600 */
+  --omr-selected: #3b82f6;        /* Blue-500 */
+  --omr-selected-text: #ffffff;
+  --omr-selected-border: #2563eb; /* Blue-600 */
+  --omr-hover: #1e3a5f;           /* custom dark blue */
+  --omr-hover-border: #3b82f6;
+  --omr-disabled: #1e293b;        /* Slate-800 */
+  --omr-disabled-text: #64748b;   /* Slate-500 */
+
+  /* === Exam: Timer === */
+  --timer-default: #e2e8f0;       /* Slate-200 */
+  --timer-bar: #3b82f6;
+  --timer-bar-track: #334155;     /* Slate-700 */
+  --timer-warning: #f59e0b;       /* Amber-500 */
+  --timer-danger: #ef4444;        /* Red-500 */
+
+  /* === Exam: Score & Result === */
+  --score-high: #34d399;          /* Emerald-400 */
+  --score-mid: #60a5fa;           /* Blue-400 */
+  --score-low: #f87171;           /* Red-400 */
+  --score-bar: #3b82f6;
+  --score-bar-bg: #334155;
+
+  /* === Exam: Question Navigation === */
+  --qnav-current: #3b82f6;
+  --qnav-current-text: #ffffff;
+  --qnav-answered: #1e3a5f;
+  --qnav-answered-text: #93c5fd;
+  --qnav-unanswered: #1e293b;
+  --qnav-unanswered-border: #475569;
+  --qnav-flagged: #451a03;
+  --qnav-flagged-border: #b45309;
+
+  /* === Status (adjust light shades for dark bg) === */
+  --error-50: #450a0a;
+  --error-100: #7f1d1d;
+  --error-200: #991b1b;
+  --error-500: #ef4444;
+  --error-600: #f87171;
+  --error-700: #fca5a5;
+  --warning-50: #451a03;
+  --warning-100: #78350f;
+  --warning-200: #92400e;
+  --warning-500: #f59e0b;
+  --warning-600: #fbbf24;
+  --warning-700: #fde68a;
+  --success-50: #064e3b;
+  --success-100: #065f46;
+  --success-500: #34d399;
+  --success-600: #6ee7b7;
+  --success-700: #a7f3d0;
+}
+
+/* -------------------------------------------------------------------
+   3. @theme inline — CSS Variables → Tailwind Utility Classes
+   ------------------------------------------------------------------- */
+@theme inline {
+  /* Font Family */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+
+  /* Custom font sizes (exam-specific) */
+  --font-size-exam-title: 2rem;
+  --font-size-exam-title--line-height: 2.5rem;
+  --font-size-question-number: 1.25rem;
+  --font-size-question-number--line-height: 1.75rem;
+
+  /* --- Colors --- */
+
+  /* Foreground */
+  --color-fg-primary: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-tertiary: var(--text-tertiary);
+  --color-fg-muted: var(--text-muted);
+  --color-fg-inverse: var(--text-inverse);
+
+  /* Background & Surface */
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-overlay: var(--bg-overlay);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Border / Line */
+  --color-line: var(--border);
+  --color-line-secondary: var(--border-secondary);
+  --color-line-focus: var(--border-focus);
+
+  /* Exam: Grading */
+  --color-exam-correct: var(--exam-correct);
+  --color-exam-correct-light: var(--exam-correct-light);
+  --color-exam-correct-border: var(--exam-correct-border);
+  --color-exam-wrong: var(--exam-wrong);
+  --color-exam-wrong-light: var(--exam-wrong-light);
+  --color-exam-wrong-border: var(--exam-wrong-border);
+  --color-exam-unanswered: var(--exam-unanswered);
+  --color-exam-unanswered-light: var(--exam-unanswered-light);
+  --color-exam-unanswered-border: var(--exam-unanswered-border);
+
+  /* Exam: OMR */
+  --color-omr-default: var(--omr-default);
+  --color-omr-default-border: var(--omr-default-border);
+  --color-omr-selected: var(--omr-selected);
+  --color-omr-selected-text: var(--omr-selected-text);
+  --color-omr-selected-border: var(--omr-selected-border);
+  --color-omr-hover: var(--omr-hover);
+  --color-omr-hover-border: var(--omr-hover-border);
+  --color-omr-disabled: var(--omr-disabled);
+  --color-omr-disabled-text: var(--omr-disabled-text);
+
+  /* Exam: Timer */
+  --color-timer-default: var(--timer-default);
+  --color-timer-bar: var(--timer-bar);
+  --color-timer-bar-track: var(--timer-bar-track);
+  --color-timer-warning: var(--timer-warning);
+  --color-timer-danger: var(--timer-danger);
+
+  /* Exam: Score */
+  --color-score-high: var(--score-high);
+  --color-score-mid: var(--score-mid);
+  --color-score-low: var(--score-low);
+  --color-score-bar: var(--score-bar);
+  --color-score-bar-bg: var(--score-bar-bg);
+
+  /* Exam: Question Navigation */
+  --color-qnav-current: var(--qnav-current);
+  --color-qnav-current-text: var(--qnav-current-text);
+  --color-qnav-answered: var(--qnav-answered);
+  --color-qnav-answered-text: var(--qnav-answered-text);
+  --color-qnav-unanswered: var(--qnav-unanswered);
+  --color-qnav-unanswered-border: var(--qnav-unanswered-border);
+  --color-qnav-flagged: var(--qnav-flagged);
+  --color-qnav-flagged-border: var(--qnav-flagged-border);
+
+  /* Status */
+  --color-error-50: var(--error-50);
+  --color-error-100: var(--error-100);
+  --color-error-200: var(--error-200);
+  --color-error-500: var(--error-500);
+  --color-error-600: var(--error-600);
+  --color-error-700: var(--error-700);
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-200: var(--warning-200);
+  --color-warning-500: var(--warning-500);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-500: var(--success-500);
+  --color-success-600: var(--success-600);
+  --color-success-700: var(--success-700);
+}
+
+/* -------------------------------------------------------------------
+   4. Base Styles
+   ------------------------------------------------------------------- */
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv01", "cv02", "cv03", "cv04";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+/* Prevent text selection on touch interactions */
+.touch-none-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Kiosk: prevent pull-to-refresh & overscroll */
+html,
+body {
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+/* Remove tap highlight on mobile/touch */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
