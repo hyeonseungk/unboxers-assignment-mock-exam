@@ -2,7 +2,11 @@
 
 ## 필수 참고 자료
 
-모든 작업을 수행하기 전에 반드시 프로젝트 루트의 `README.md` 파일을 참고하세요.
+모든 작업을 수행하기 전에 반드시 아래 문서를 참고하세요.
+
+- **`README.md`** (프로젝트 루트): 과제 개요, API 명세, 실행 방법
+- **`SPEC.md`** (apps/web): 제품 스펙 결정사항 — 학생정보 입력 시점, 타이머 동작, 결과 화면 디자인 등 Figma에 명시되지 않은 세부 사항이 정의되어 있습니다.
+
 GitHub 원본: https://github.com/hyeonseungk/unboxers-assignment-mock-exam
 
 ---
