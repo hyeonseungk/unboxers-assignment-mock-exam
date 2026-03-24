@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "dark";
 export type ButtonSize = "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -29,6 +29,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-transparent text-fg-secondary",
     "active:bg-background-secondary",
     "disabled:text-fg-muted",
+  ),
+  dark: cn(
+    "bg-fg-primary text-fg-inverse",
+    "active:bg-fg-secondary",
+    "disabled:bg-fg-muted disabled:text-fg-inverse/60",
   ),
 };
 
