@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils/cn";
-
-const SUBJECTIVE_COUNT = 11;
-const SUBJECTIVE_START = 15;
+import {
+  SUBJECTIVE_COUNT,
+  SUBJECTIVE_DISPLAY_START,
+} from "@/lib/constants/exam";
 
 interface OmrSubjectiveListProps {
   answers: Record<number, string>;
@@ -17,22 +18,19 @@ export function OmrSubjectiveList({
   disabled = false,
 }: OmrSubjectiveListProps) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="border-b border-line-secondary pb-2 mb-3">
-        <p className="text-base font-bold text-fg-primary text-center">
-          주관식 답안
+    <div className="flex flex-col h-full pl-3 pr-2 w-full">
+      <div className="pb-[18px]">
+        <p className="text-[17px] font-extrabold text-[#111] text-center tracking-[0.3em]">
+          주 관 식 답 안
         </p>
       </div>
 
-      <p className="text-base text-fg-muted mb-3">
-        문항을 터치하여 답안을 입력하세요.
-      </p>
-
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col border border-[#8EABF2] bg-[#FFFBEF] overflow-hidden">
         {Array.from({ length: SUBJECTIVE_COUNT }, (_, i) => {
-          const displayNumber = SUBJECTIVE_START + i;
+          const displayNumber = SUBJECTIVE_DISPLAY_START + i;
           const value = answers[displayNumber] ?? "";
           const isSelected = selectedQuestion === displayNumber;
+          const isLast = i === SUBJECTIVE_COUNT - 1;
 
           return (
             <button
@@ -41,37 +39,32 @@ export function OmrSubjectiveList({
               onClick={() => onSelectQuestion(displayNumber)}
               disabled={disabled}
               className={cn(
-                "flex items-center gap-3 min-h-11 px-3 py-1.5 rounded-lg",
-                "text-base transition-all duration-150",
-                "select-none touch-manipulation",
-                "active:scale-[0.99]",
-                isSelected
-                  ? "bg-accent-light border-2 border-accent"
-                  : "bg-surface-secondary border border-line hover:border-line-secondary",
+                "flex items-stretch min-h-[43px] bg-[#FFFBEF]",
+                "transition-all duration-150 select-none touch-manipulation",
+                !isLast && "border-b border-[#8EABF2]",
+                isSelected && "bg-[#F5F8FF]",
                 disabled && "pointer-events-none opacity-60",
               )}
             >
-              <span className="font-medium text-fg-primary w-8 shrink-0">
-                {displayNumber}
-              </span>
-              <span
+              <div className="w-[40px] shrink-0 flex items-center justify-center bg-[#EAF2FF] border-r border-[#8EABF2]">
+                <span className="font-bold text-[#5D7FE6] text-[14px]">
+                  {displayNumber}
+                </span>
+              </div>
+              <div
                 className={cn(
-                  "flex-1 text-left",
-                  value ? "text-fg-primary font-semibold" : "text-fg-muted",
+                  "flex-1 text-center px-3 flex items-center justify-center",
+                  value
+                    ? "text-[#365CC8] font-bold text-[14px]"
+                    : "text-[#D0D7E8] text-[12px] font-medium tracking-wide",
                 )}
               >
-                {value || "미입력"}
-              </span>
+                {value || "터치해서 주관식 답안 입력"}
+              </div>
             </button>
           );
         })}
       </div>
-
-      <p className="mt-auto pt-3 text-base text-fg-muted leading-relaxed">
-        아래표는 주관식 답안을
-        <br />
-        입력하는 방법에 활용하세요.
-      </p>
     </div>
   );
 }

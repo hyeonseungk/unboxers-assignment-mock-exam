@@ -2,6 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { NumberKeypad } from "@/components/NumberKeypad";
 import { ChevronUp } from "lucide-react";
+import { SUBJECTIVE_COUNT } from "@/lib/constants/exam";
 
 type PracticeState = "initial" | "selected" | "completed";
 
@@ -9,7 +10,6 @@ interface StepSubjectivePracticeProps {
   onStateChange: (canGoNext: boolean) => void;
 }
 
-const TOTAL_SUBJECTIVE = 11;
 const TARGET_QUESTION = 4;
 
 export function StepSubjectivePractice({
@@ -51,7 +51,7 @@ export function StepSubjectivePractice({
         {/* Left: Subjective question list */}
         <div className="w-96 bg-surface border border-line rounded-2xl overflow-y-auto">
           <div className="divide-y divide-line">
-            {Array.from({ length: TOTAL_SUBJECTIVE }, (_, i) => i + 1).map(
+            {Array.from({ length: SUBJECTIVE_COUNT }, (_, i) => i + 1).map(
               (num) => {
                 const isTarget = num === TARGET_QUESTION;
                 const isSelected =

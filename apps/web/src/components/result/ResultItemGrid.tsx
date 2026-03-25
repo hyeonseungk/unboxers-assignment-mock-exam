@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
 import type { ExamResultItem, GradeResult } from "@/lib/types/exam";
-
-const OBJECTIVE_COUNT = 14;
-const SUBJECTIVE_COUNT = 11;
-const SUBJECTIVE_DISPLAY_START = 15;
+import {
+  OBJECTIVE_COUNT,
+  SUBJECTIVE_COUNT,
+  SUBJECTIVE_DISPLAY_START,
+} from "@/lib/constants/exam";
 
 interface ResultItemGridProps {
   results: ExamResultItem[];

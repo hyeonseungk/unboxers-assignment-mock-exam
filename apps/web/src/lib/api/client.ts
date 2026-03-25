@@ -1,12 +1,11 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface ApiResponse<T> {
   message: string;
   data: T;
 }
 
-export async function apiFetch<T>(
+export async function httpRequester<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {

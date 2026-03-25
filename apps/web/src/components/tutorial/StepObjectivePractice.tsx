@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { ChevronUp } from "lucide-react";
+import {
+  OBJECTIVE_CHOICES,
+  OBJECTIVE_COLUMN_COUNT,
+  OBJECTIVE_PER_COLUMN,
+} from "@/lib/constants/exam";
 
 type PracticeState = "initial" | "marked" | "completed";
 
@@ -8,8 +13,14 @@ interface StepObjectivePracticeProps {
   onStateChange: (canGoNext: boolean) => void;
 }
 
-const LEFT_QUESTIONS = Array.from({ length: 13 }, (_, i) => i + 1);
-const RIGHT_QUESTIONS = Array.from({ length: 12 }, (_, i) => i + 14);
+const QUESTION_COLUMNS = Array.from(
+  { length: OBJECTIVE_COLUMN_COUNT },
+  (_, columnIndex) =>
+    Array.from(
+      { length: OBJECTIVE_PER_COLUMN },
+      (_, rowIndex) => columnIndex * OBJECTIVE_PER_COLUMN + rowIndex + 1,
+    ),
+);
 
 export function StepObjectivePractice({
   onStateChange,
@@ -39,26 +50,25 @@ export function StepObjectivePractice({
 
   return (
     <div className="h-full flex flex-col items-center">
-      {/* OMR Practice Grid */}
       <div className="flex-1 flex items-start justify-center pt-4 px-8 overflow-y-auto">
         <div className="bg-surface border border-line rounded-2xl p-5 shadow-sm">
           <div className="flex gap-6">
-            <OmrColumn
-              questions={LEFT_QUESTIONS}
-              selections={selections}
-              onBubbleClick={handleBubbleClick}
-            />
-            <div className="w-px bg-line" />
-            <OmrColumn
-              questions={RIGHT_QUESTIONS}
-              selections={selections}
-              onBubbleClick={handleBubbleClick}
-            />
+            {QUESTION_COLUMNS.map((questions, index) => (
+              <div key={`tutorial-col-${index}`} className="flex items-start">
+                <OmrColumn
+                  questions={questions}
+                  selections={selections}
+                  onBubbleClick={handleBubbleClick}
+                />
+                {index < QUESTION_COLUMNS.length - 1 && (
+                  <div className="w-px bg-line ml-6 h-full" />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Instruction area */}
       <div className="shrink-0 text-center space-y-2 px-8 pb-4">
         {practiceState !== "completed" ? (
           <>
@@ -112,12 +122,11 @@ function OmrColumn({
 }) {
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center gap-1 pb-2 border-b border-line mb-1">
         <div className="w-9 text-center text-base font-semibold text-fg-muted">
           번호
         </div>
-        {[1, 2, 3, 4, 5].map((n) => (
+        {OBJECTIVE_CHOICES.map((n) => (
           <div
             key={n}
             className="w-10 text-center text-base font-semibold text-fg-muted"
@@ -127,13 +136,12 @@ function OmrColumn({
         ))}
       </div>
 
-      {/* Rows */}
       {questions.map((q) => (
         <div key={q} className="flex items-center gap-1 py-[3px]">
           <div className="w-9 text-center text-base font-medium text-fg-primary">
             {q}
           </div>
-          {([1, 2, 3, 4, 5] as const).map((a) => {
+          {OBJECTIVE_CHOICES.map((a) => {
             const isSelected = selections[q] === a;
             return (
               <button

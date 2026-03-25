@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { httpRequester } from "./client";
 import type {
   ExamInfo,
   ExamSubmitRequest,
@@ -7,11 +7,11 @@ import type {
 
 export const examService = {
   getExamInfo(): Promise<ExamInfo> {
-    return apiFetch<ExamInfo>("/api/exams");
+    return httpRequester<ExamInfo>("/api/exams");
   },
 
   submitAnswers(data: ExamSubmitRequest): Promise<ExamSubmitResponse> {
-    return apiFetch<ExamSubmitResponse>("/api/exams/submit", {
+    return httpRequester<ExamSubmitResponse>("/api/exams/submit", {
       method: "POST",
       body: JSON.stringify(data),
     });

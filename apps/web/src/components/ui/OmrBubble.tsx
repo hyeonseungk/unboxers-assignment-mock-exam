@@ -33,20 +33,19 @@ export function OmrBubble({
       aria-label={`${number}번 선택지`}
       aria-pressed={selected}
       className={cn(
-        "h-12 w-12 rounded-full flex items-center justify-center",
-        "text-lg font-semibold border-2",
+        "h-[34px] w-[20px] rounded-[999px] flex items-center justify-center",
+        "text-[11px] font-bold text-white",
         "transition-all duration-150 select-none touch-manipulation",
         "active:scale-95",
 
         // 기본 상태 (시험 중, 미선택)
         !selected && !result && [
-          "bg-omr-default border-omr-default-border text-fg-secondary",
+          "bg-[#989FA6]",
         ],
 
         // 선택 상태 (시험 중)
         selected && !result && [
-          "bg-omr-selected border-omr-selected-border text-omr-selected-text",
-          "shadow-sm",
+          "bg-[#1A1A1A] shadow-sm",
         ],
 
         // 채점 결과: 정답 + 내가 선택

@@ -11,10 +11,10 @@ import { ExamWaitingOverlay } from "@/components/exam/ExamWaitingOverlay";
 import { ConfirmDialog } from "@/components/modal/ConfirmDialog";
 import { HelpModal } from "@/components/modal/HelpModal";
 import type { AnswerItem } from "@/lib/types/exam";
+import { SUBJECTIVE_DISPLAY_START } from "@/lib/constants/exam";
 
 const EXAM_TIME_SECONDS = 60;
 const MAX_SUBJECTIVE_DIGITS = 3;
-const SUBJECTIVE_START = 15;
 
 export function OmrPage() {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export function OmrPage() {
       if (value !== "") {
         answers.push({
           answerType: "subjective",
-          number: Number(num) - (SUBJECTIVE_START - 1),
+          number: Number(num) - (SUBJECTIVE_DISPLAY_START - 1),
           answer: Number(value),
         });
       }
