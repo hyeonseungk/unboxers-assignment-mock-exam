@@ -3,6 +3,17 @@ import {
   SUBJECTIVE_COUNT,
   SUBJECTIVE_DISPLAY_START,
 } from "@/lib/constants/exam";
+import {
+  OMR_BORDER_B,
+  OMR_BORDER_R,
+  OMR_LINE,
+  OMR_NUMBER_STRIP_GRID,
+  OMR_PLACEHOLDER,
+  OMR_SELECTION_BG,
+  OMR_STRIP_BG,
+  OMR_TEXT,
+  OMR_TITLE_TEXT,
+} from "./omrStyles";
 
 interface OmrSubjectiveListProps {
   answers: Record<number, string>;
@@ -18,19 +29,17 @@ export function OmrSubjectiveList({
   disabled = false,
 }: OmrSubjectiveListProps) {
   return (
-    <div className="flex flex-col h-full pl-3 pr-2 w-full">
-      <div className="pb-[18px]">
-        <p className="text-[17px] font-extrabold text-[#111] text-center tracking-[0.3em]">
-          주 관 식 답 안
-        </p>
+    <div className="grid h-full w-full grid-rows-[40px_1fr]">
+      <div className={cn("flex items-center justify-center", OMR_BORDER_B, OMR_LINE)}>
+        <p className={cn(OMR_TITLE_TEXT, OMR_TEXT)}>주 관 식 답 안</p>
       </div>
 
-      <div className="flex flex-col border border-[#8EABF2] bg-[#FFFBEF] overflow-hidden">
-        {Array.from({ length: SUBJECTIVE_COUNT }, (_, i) => {
-          const displayNumber = SUBJECTIVE_DISPLAY_START + i;
+      <div className="flex min-h-0 flex-col">
+        {Array.from({ length: SUBJECTIVE_COUNT }, (_, index) => {
+          const displayNumber = SUBJECTIVE_DISPLAY_START + index;
           const value = answers[displayNumber] ?? "";
           const isSelected = selectedQuestion === displayNumber;
-          const isLast = i === SUBJECTIVE_COUNT - 1;
+          const isLast = index === SUBJECTIVE_COUNT - 1;
 
           return (
             <button
@@ -39,27 +48,42 @@ export function OmrSubjectiveList({
               onClick={() => onSelectQuestion(displayNumber)}
               disabled={disabled}
               className={cn(
-                "flex items-stretch min-h-[43px] bg-[#FFFBEF]",
-                "transition-all duration-150 select-none touch-manipulation",
-                !isLast && "border-b border-[#8EABF2]",
-                isSelected && "bg-[#F5F8FF]",
-                disabled && "pointer-events-none opacity-60",
+                "grid min-h-0 flex-1 text-left",
+                OMR_NUMBER_STRIP_GRID,
+                !isLast && OMR_BORDER_B,
+                OMR_LINE,
+                disabled && "pointer-events-none",
               )}
             >
-              <div className="w-[40px] shrink-0 flex items-center justify-center bg-[#EAF2FF] border-r border-[#8EABF2]">
-                <span className="font-bold text-[#5D7FE6] text-[14px]">
+              <div
+                className={cn(
+                  "flex items-center justify-center",
+                  OMR_BORDER_R,
+                  OMR_LINE,
+                  OMR_STRIP_BG,
+                )}
+              >
+                <span className={cn("text-[12px] font-semibold", OMR_TEXT)}>
                   {displayNumber}
                 </span>
               </div>
+
               <div
                 className={cn(
-                  "flex-1 text-center px-3 flex items-center justify-center",
-                  value
-                    ? "text-[#365CC8] font-bold text-[14px]"
-                    : "text-[#D0D7E8] text-[12px] font-medium tracking-wide",
+                  "flex items-center justify-center px-4 text-center",
+                  isSelected && OMR_SELECTION_BG,
                 )}
               >
-                {value || "터치해서 주관식 답안 입력"}
+                <span
+                  className={cn(
+                    "truncate",
+                    value
+                      ? `text-[13px] font-semibold ${OMR_TEXT}`
+                      : `text-[12px] font-bold ${OMR_PLACEHOLDER}`,
+                  )}
+                >
+                  {value || "터치해서 주관식 답안 입력"}
+                </span>
               </div>
             </button>
           );

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils/cn";
+import { OMR_BUBBLE_BG, OMR_BUBBLE_SIZE } from "@/components/exam/omrStyles";
 
 type GradingResult = "correct" | "wrong" | "unanswered";
 
@@ -33,14 +34,14 @@ export function OmrBubble({
       aria-label={`${number}번 선택지`}
       aria-pressed={selected}
       className={cn(
-        "h-[34px] w-[20px] rounded-[999px] flex items-center justify-center",
+        `${OMR_BUBBLE_SIZE} flex items-center justify-center`,
         "text-[11px] font-bold text-white",
         "transition-all duration-150 select-none touch-manipulation",
         "active:scale-95",
 
         // 기본 상태 (시험 중, 미선택)
         !selected && !result && [
-          "bg-[#989FA6]",
+          OMR_BUBBLE_BG,
         ],
 
         // 선택 상태 (시험 중)

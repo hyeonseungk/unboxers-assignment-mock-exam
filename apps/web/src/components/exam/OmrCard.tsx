@@ -1,13 +1,18 @@
 import type { StudentInfo } from "@/lib/types/exam";
+import { cn } from "@/lib/utils/cn";
 import { OmrStudentInfo } from "./OmrStudentInfo";
 import { OmrObjectiveGrid } from "./OmrObjectiveGrid";
 import { OmrSubjectiveList } from "./OmrSubjectiveList";
-
-const FOOTER_BAR_GROUPS = [
-  [22, 14, 22, 14, 22],
-  [22, 14, 22, 14, 22],
-  [22, 14, 22, 14, 22],
-] as const;
+import {
+  OMR_BORDER_L,
+  OMR_BORDER_R,
+  OMR_BORDER_Y,
+  OMR_BUBBLE_COLUMN_GAP,
+  OMR_BUBBLE_SLOT_WIDTH,
+  OMR_CARD_BG,
+  OMR_NOTE,
+  OMR_NUMBER_STRIP_GRID,
+} from "./omrStyles";
 
 interface OmrCardProps {
   studentInfo: StudentInfo;
@@ -29,17 +34,18 @@ export function OmrCard({
   disabled = false,
 }: OmrCardProps) {
   return (
-    <div className="bg-[#FFFBEF] border-[1.5px] border-[#5D7FE6] rounded-2xl shadow-sm overflow-hidden h-full w-full flex flex-col p-4">
-      <div className="flex flex-1 min-h-0">
-        {/* 좌측: 학생 정보 */}
-        <div className="shrink-0 flex flex-col w-[258px]">
+    <div
+      className={cn(
+        "flex h-full w-full flex-col rounded-[28px] bg-[#FCF8EA] p-[12px] shadow-[0_8px_22px_rgba(29,33,48,0.12)]",
+        OMR_CARD_BG,
+      )}
+    >
+      <div className="grid min-h-0 flex-1 grid-cols-[236px_minmax(0,1fr)_252px]">
+        <div className="min-w-0">
           <OmrStudentInfo studentInfo={studentInfo} />
         </div>
 
-        <div className="w-px bg-[#C9D6F8] mx-4 my-1" />
-
-        {/* 중앙: 객관식 답안 */}
-        <div className="flex-1 flex min-w-0">
+        <div className={cn("min-w-0", OMR_BORDER_Y, OMR_BORDER_L, "border-[#86A6F3]")}>
           <OmrObjectiveGrid
             answers={objectiveAnswers}
             onSelect={onObjectiveSelect}
@@ -47,10 +53,7 @@ export function OmrCard({
           />
         </div>
 
-        <div className="w-px bg-[#C9D6F8] mx-4 my-1" />
-
-        {/* 우측: 주관식 답안 */}
-        <div className="w-[260px] shrink-0 flex">
+        <div className={cn("min-w-0", OMR_BORDER_Y, OMR_BORDER_L, OMR_BORDER_R, "border-[#86A6F3]")}>
           <OmrSubjectiveList
             answers={subjectiveAnswers}
             selectedQuestion={selectedSubjective}
@@ -60,37 +63,83 @@ export function OmrCard({
         </div>
       </div>
 
-      <div className="flex items-end pt-[8px]">
-        <div className="w-[258px] shrink-0" />
-        <div className="w-px mx-4 opacity-0" />
+      <div className="grid grid-cols-[236px_minmax(0,1fr)_252px] items-end pt-[2px]">
+        <StudentFooterBars />
 
-        <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-3 w-full">
-            {FOOTER_BAR_GROUPS.map((group, groupIndex) => (
-              <div
-                key={`footer-group-${groupIndex}`}
-                className="flex items-end justify-center gap-[10px]"
-              >
-                {group.map((height, barIndex) => (
-                  <span
-                    key={`footer-group-${groupIndex}-bar-${barIndex}`}
-                    className="w-[6px] rounded-[1px] bg-[#111]"
-                    style={{ height: `${height}px` }}
-                  />
-                ))}
-              </div>
-            ))}
+        <ObjectiveFooterBars />
+
+        <div className={cn("grid", OMR_NUMBER_STRIP_GRID)}>
+          <div />
+          <div className="flex justify-center">
+            <p className={cn("text-[11px] font-semibold tracking-[-0.01em]", OMR_NOTE)}>
+              선 아래부분은 절대 칠하지 말 것.
+            </p>
           </div>
-        </div>
-
-        <div className="w-px mx-4 opacity-0" />
-
-        <div className="w-[260px] shrink-0 flex justify-end">
-          <p className="text-[11px] font-semibold tracking-tight text-[#6A6A6A]">
-            선 아래부분은 절대 칠하지 말 것.
-          </p>
         </div>
       </div>
     </div>
   );
+}
+
+function StudentFooterBars() {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_80px]">
+      <div />
+      <div className="grid grid-cols-[26px_1.5px_minmax(0,1fr)]">
+        <div className="flex justify-center">
+          <FooterBar />
+        </div>
+        <div />
+        <div className="grid grid-cols-2 gap-x-[6px] px-[6px]">
+          <div className="flex justify-center">
+            <FooterBar />
+          </div>
+          <div className="flex justify-center">
+            <FooterBar />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ObjectiveFooterBars() {
+  return (
+    <div className="grid grid-cols-3">
+      {Array.from({ length: 3 }, (_, index) => (
+        <div
+          key={`objective-footer-${index}`}
+          className={cn(
+            "grid min-w-0",
+            OMR_NUMBER_STRIP_GRID,
+            index > 0 && "border-l-[1.5px] border-transparent",
+          )}
+        >
+          <div />
+          <div className="px-[6px]">
+            <BubbleAlignedFooterBars count={5} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BubbleAlignedFooterBars({ count }: { count: number }) {
+  return (
+    <div className={cn("flex items-end justify-center", OMR_BUBBLE_COLUMN_GAP)}>
+      {Array.from({ length: count }, (_, index) => (
+        <div
+          key={`footer-slot-${count}-${index}`}
+          className={cn("flex justify-center", OMR_BUBBLE_SLOT_WIDTH)}
+        >
+          <FooterBar />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FooterBar() {
+  return <span className="h-[22px] w-[6px] rounded-[1px] bg-[#111111]" />;
 }

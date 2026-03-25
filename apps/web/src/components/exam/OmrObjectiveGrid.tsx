@@ -1,10 +1,24 @@
 import { memo } from "react";
 import { OmrBubble } from "@/components/ui";
+import { cn } from "@/lib/utils/cn";
 import {
   OBJECTIVE_CHOICES,
   OBJECTIVE_COLUMN_COUNT,
   OBJECTIVE_PER_COLUMN,
 } from "@/lib/constants/exam";
+import {
+  OMR_BORDER_B,
+  OMR_BORDER_L,
+  OMR_BORDER_R,
+  OMR_BORDER_T,
+  OMR_BUBBLE_COLUMN_GAP,
+  OMR_LINE,
+  OMR_NUMBER_STRIP_GRID,
+  OMR_SECTION_BG,
+  OMR_STRIP_BG,
+  OMR_TEXT,
+  OMR_TITLE_TEXT,
+} from "./omrStyles";
 
 interface OmrObjectiveGridProps {
   answers: Record<number, number>;
@@ -25,44 +39,120 @@ export function OmrObjectiveGrid({
   );
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="pb-[18px]">
-        <p className="text-[17px] font-extrabold text-[#111] text-center tracking-[0.3em]">
-          객 관 식 답 안
-        </p>
+    <div className="grid h-full w-full grid-rows-[40px_1fr]">
+      <div className={cn("flex items-center justify-center", OMR_BORDER_B, OMR_LINE)}>
+        <p className={cn(OMR_TITLE_TEXT, OMR_TEXT)}>객 관 식 답 안</p>
       </div>
 
-      <div className="flex flex-1 border-t border-[#C9D6F8] pt-[16px]">
+      <div className="grid min-h-0 grid-cols-3">
         {columns.map((questions, columnIndex) => (
-          <div
+          <ObjectiveColumn
             key={`objective-col-${columnIndex}`}
-            className="flex flex-col flex-1 px-[10px] min-w-0"
-          >
-            <div
-              className={
-                columnIndex < columns.length - 1
-                  ? "flex flex-col flex-1 border-r border-[#C9D6F8] pr-[10px]"
-                  : "flex flex-col flex-1"
-              }
-            >
-              {questions.map((questionNumber, rowIndex) => (
-                <div key={questionNumber} className="flex flex-col">
-                  <ObjectiveRow
-                    questionNumber={questionNumber}
-                    selectedChoice={answers[questionNumber]}
-                    choices={OBJECTIVE_CHOICES}
-                    onSelect={onSelect}
-                    disabled={disabled}
-                  />
-                  {rowIndex === 4 && (
-                    <div className="border-b-[1.5px] border-dotted border-[#C9D6F8] mt-[2px] mb-[8px] mx-[-10px]" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+            questions={questions}
+            answers={answers}
+            onSelect={onSelect}
+            disabled={disabled}
+            hasLeftDivider={columnIndex > 0}
+            highlightTop={columnIndex === 1}
+            highlightBottom={columnIndex !== 1}
+          />
         ))}
       </div>
+    </div>
+  );
+}
+
+function ObjectiveColumn({
+  questions,
+  answers,
+  onSelect,
+  disabled,
+  hasLeftDivider,
+  highlightTop,
+  highlightBottom,
+}: {
+  questions: number[];
+  answers: Record<number, number>;
+  onSelect: (questionNumber: number, choice: number) => void;
+  disabled: boolean;
+  hasLeftDivider: boolean;
+  highlightTop: boolean;
+  highlightBottom: boolean;
+}) {
+  const topQuestions = questions.slice(0, 5);
+  const bottomQuestions = questions.slice(5);
+
+  return (
+    <div className={cn("grid min-w-0", OMR_NUMBER_STRIP_GRID, hasLeftDivider && OMR_BORDER_L, OMR_LINE)}>
+      <div className={cn("grid h-full grid-rows-[1fr_11px_1fr]", OMR_BORDER_R, OMR_LINE, OMR_STRIP_BG)}>
+        <QuestionNumberGroup questions={topQuestions} />
+        <div />
+        <QuestionNumberGroup questions={bottomQuestions} />
+      </div>
+
+      <div className="grid min-w-0 h-full grid-rows-[1fr_11px_1fr]">
+        <div className={cn("min-w-0 px-[6px] py-[2px]", highlightTop && OMR_SECTION_BG)}>
+          <ObjectiveGroup
+            questions={topQuestions}
+            answers={answers}
+            onSelect={onSelect}
+            disabled={disabled}
+          />
+        </div>
+        <div className="flex items-center">
+          <div className={cn("w-full border-dashed", OMR_BORDER_T, OMR_LINE)} />
+        </div>
+        <div className={cn("min-w-0 px-[6px] py-[2px]", highlightBottom && OMR_SECTION_BG)}>
+          <ObjectiveGroup
+            questions={bottomQuestions}
+            answers={answers}
+            onSelect={onSelect}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ObjectiveGroup({
+  questions,
+  answers,
+  onSelect,
+  disabled,
+}: {
+  questions: number[];
+  answers: Record<number, number>;
+  onSelect: (questionNumber: number, choice: number) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="flex h-full flex-col justify-between py-[2px]">
+      {questions.map((questionNumber) => (
+        <ObjectiveRow
+          key={questionNumber}
+          questionNumber={questionNumber}
+          selectedChoice={answers[questionNumber]}
+          choices={OBJECTIVE_CHOICES}
+          onSelect={onSelect}
+          disabled={disabled}
+        />
+      ))}
+    </div>
+  );
+}
+
+function QuestionNumberGroup({ questions }: { questions: number[] }) {
+  return (
+    <div className="flex h-full flex-col justify-between px-[1px] py-[2px]">
+      {questions.map((questionNumber) => (
+        <div
+          key={`number-strip-${questionNumber}`}
+          className="flex h-[36px] items-center justify-center"
+        >
+          <span className={cn("text-[12px] font-semibold", OMR_TEXT)}>{questionNumber}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -81,13 +171,10 @@ const ObjectiveRow = memo(function ObjectiveRow({
   disabled: boolean;
 }) {
   return (
-    <div className="flex items-center gap-[6px] mb-[8px]">
-      <span className="w-[24px] h-[28px] rounded-[6px] bg-[#EAF2FF] text-center text-[13px] leading-[28px] font-bold text-[#5D7FE6] shrink-0">
-        {questionNumber}
-      </span>
+    <div className={cn("flex h-[36px] items-center justify-center", OMR_BUBBLE_COLUMN_GAP)}>
       {choices.map((choice) => (
         <OmrBubble
-          key={choice}
+          key={`${questionNumber}-${choice}`}
           number={choice as 1 | 2 | 3 | 4 | 5}
           selected={selectedChoice === choice}
           onSelect={() => onSelect(questionNumber, choice)}

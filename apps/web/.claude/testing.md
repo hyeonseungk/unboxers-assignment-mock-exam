@@ -1207,3 +1207,116 @@ pnpm vitest --ui                       # 브라우저 UI 모드
 - [ ] Mock이 테스트 종료 후 정리되는가?
 - [ ] `fireEvent` 대신 `userEvent`를 사용했는가?
 - [ ] 커버리지 목표(Statements/Branches/Functions 70% 이상)를 충족하는가?
+
+---
+
+## 13. 프로젝트 테스트 대상 및 우선순위
+
+> 이 프로젝트에서 실제로 작성할 수 있는 테스트를 대상별로 정리한 섹션입니다.
+> 위 섹션(6~9)의 일반 패턴을 참고하되, 아래 목록의 실제 컴포넌트·함수·흐름에 적용하세요.
+
+### 13.1 단위 테스트 (Unit)
+
+#### Zustand 스토어 (`useExamStore`)
+
+| 대상 | 검증 내용 |
+|------|----------|
+| `setObjectiveAnswer` | 같은 답 재선택 시 토글(해제) 동작 |
+| `setSubjectiveAnswer` | 값 저장 및 덮어쓰기 |
+| `setStudentInfo` | 유효한 학생 정보 저장 |
+| `resetExam` | 전체 상태(답안, 학생정보, 타이머 등) 초기화 |
+
+#### API 클라이언트 (`httpRequester`)
+
+| 대상 | 검증 내용 |
+|------|----------|
+| 정상 응답 | `ApiResponse.data` 필드만 추출하여 반환 |
+| HTTP 에러 | 응답 body의 에러 메시지 파싱 |
+| JSON 파싱 실패 | 폴백 에러 메시지(`요청 실패 (status)`) 반환 |
+
+#### 답안 변환 로직 (`OmrPage.buildAnswers`)
+
+| 대상 | 검증 내용 |
+|------|----------|
+| 객관식 변환 | `Record<number, number>` → `{ answerType: "objective", number, answer }[]` |
+| 주관식 변환 | `Record<number, string>` → `{ answerType: "subjective", number, answer }[]` |
+| 빈 답안 | 양쪽 모두 비어있을 때 빈 배열 반환 |
+| 빈 문자열 제외 | 주관식에서 `""` 값은 배열에 포함되지 않음 |
+
+### 13.2 컴포넌트 테스트 (Component)
+
+#### OmrBubble
+
+- 선택/미선택 상태 렌더링 (`aria-pressed`)
+- 클릭 시 `onSelect` 호출
+- `disabled` 시 클릭 무시 (`pointer-events-none`)
+- 채점 결과 상태별 스타일 (`correct` / `wrong` / `unanswered`)
+
+#### OmrObjectiveGrid
+
+- `OBJECTIVE_COLUMN_COUNT` × `OBJECTIVE_PER_COLUMN` 만큼 문항 렌더링
+- 버블 클릭 시 `onSelect(문항번호, 선택지)` 전달
+- 5번째 문항 뒤 점선 구분선 존재
+
+#### OmrSubjectiveList
+
+- `SUBJECTIVE_COUNT`개 문항 렌더링
+- 문항 선택 시 하이라이트 (`bg-[#F5F8FF]`)
+- 입력된 답안 값 표시 vs 플레이스홀더 텍스트
+
+#### StudentInfoModal
+
+- 필수 필드 미입력 시 제출 불가
+- 학년 버튼(1/2/3학년) 선택 동작
+- 유효한 정보 입력 후 `onSubmit` 호출
+
+#### ExamKeypadPanel
+
+- 숫자 키(0-9) 입력 → 값 누적
+- ⌫(백스페이스) → 마지막 글자 삭제
+- 완료 버튼 → `onComplete` 호출
+- 특수 키(√, /, -) 비활성화 상태
+- 최대 3자리 입력 제한
+
+### 13.3 통합 테스트 (Integration)
+
+#### 튜토리얼 흐름
+
+- 5단계 순차 이동 (이전/다음 버튼)
+- 스텝 3 (객관식 연습): 15번 3번 마킹 → 해제 → "다음" 버튼 활성화
+- 스텝 4 (주관식 연습): 4번 선택 → 숫자 입력 → 완료 → "다음" 버튼 활성화
+- "튜토리얼 건너뛰기" → 학생정보 모달 → `/exam` 이동
+
+#### 시험 응시 흐름
+
+- 객관식 마킹 → 주관식 입력 → 종료하기 → 확인 다이얼로그 → 제출 → `/result` 이동
+- 타이머 만료 → 자동 제출 (`useExamTimer.isExpired` → `handleSubmit`)
+- `studentInfo` 없이 `/exam` 접근 시 `/`로 리다이렉트
+
+#### 결과 화면
+
+- 3단계 전환: 제출 완료 → 스캔 애니메이션(3초) → 결과 표시
+- 점수·정답/오답/미답 수 정확히 표시
+- "다시 풀기" / "홈으로" → `/` 이동
+
+### 13.4 API 모킹 테스트 (MSW)
+
+| 엔드포인트 | 검증 내용 |
+|-----------|----------|
+| `GET /api/exams` | 시험 정보(title, totalQuestions 등) 정상 조회 |
+| `GET /api/exams` (에러) | 서버 에러 시 에러 메시지 처리 |
+| `POST /api/exams/submit` | 요청 body 형식 검증 (`StudentInfo` + `AnswerItem[]`) |
+| `POST /api/exams/submit` | 채점 결과 응답 파싱 (`score`, `results[]`) |
+| `POST /api/exams/submit` | 빈 `answers` 배열 허용 (전체 `unanswered` 처리) |
+
+### 13.5 우선순위
+
+| 우선순위 | 대상 | 이유 |
+|---------|------|------|
+| **높음** | Zustand 스토어 | 앱 전체 상태의 핵심, 순수 로직이라 테스트 쉬움 |
+| **높음** | 답안 변환 로직 | `Record` → API 형식 변환에 버그 가능성 높음 |
+| **높음** | OmrBubble / 키패드 | 사용자 인터랙션의 핵심 단위 |
+| **중간** | 튜토리얼 인터랙티브 스텝 | 조건부 "다음" 버튼 활성화 로직 검증 |
+| **중간** | API 서비스 + MSW | 서버 통신 안정성 |
+| **낮음** | 결과 화면 전환 | 타이머 기반 단순 전환 |
+| **낮음** | 레이아웃/스타일 | 비주얼 검증은 E2E 또는 수동 확인이 더 적합 |
