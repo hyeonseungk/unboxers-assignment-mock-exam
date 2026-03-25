@@ -355,6 +355,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Pointer cursor for all interactive elements */
+button,
+a,
+[role="button"] {
+  cursor: pointer;
+}
+
 /* -------------------------------------------------------------------
    5. Keyframe Animations
    ------------------------------------------------------------------- */

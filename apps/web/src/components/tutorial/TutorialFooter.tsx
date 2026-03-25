@@ -28,30 +28,27 @@ export function TutorialFooter({
     isInteractiveStep && canGoNext ? "primary" : "dark";
 
   return (
-    <footer className="shrink-0 grid grid-cols-3 items-center px-8 py-5">
+    <footer className="shrink-0 relative flex items-center justify-center px-8 py-5 min-h-[88px]">
       {/* Left: Previous */}
-      <div>
-        {!isFirstStep && (
+      {!isFirstStep && (
+        <div className="absolute left-8">
           <Button variant="ghost" onClick={onPrev}>
             <ChevronLeft className="size-5" />
             이전으로
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Center: Skip */}
-      <div className="flex justify-center">
+      {/* Center: Skip & Next / Finish */}
+      <div className="flex gap-3 justify-center w-full max-w-[400px]">
         {!isLastStep && (
-          <Button variant="secondary" onClick={onSkip}>
+          <Button variant="secondary" onClick={onSkip} size="lg" className="flex-1">
             튜토리얼 건너뛰기
           </Button>
         )}
-      </div>
 
-      {/* Right: Next / Finish */}
-      <div className="flex justify-end">
         {isLastStep ? (
-          <Button variant="dark" onClick={onNext} size="lg">
+          <Button variant="dark" onClick={onNext} size="lg" className="flex-1">
             시험 화면으로 이동
           </Button>
         ) : (
@@ -60,6 +57,7 @@ export function TutorialFooter({
             onClick={onNext}
             disabled={nextDisabled}
             size="lg"
+            className="flex-1"
           >
             다음
           </Button>

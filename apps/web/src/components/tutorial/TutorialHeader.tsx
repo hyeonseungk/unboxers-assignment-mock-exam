@@ -12,9 +12,9 @@ export function TutorialHeader({ className }: TutorialHeaderProps) {
         className,
       )}
     >
-      <span className="text-lg font-bold text-fg-primary">
-        베이스 수학학원
-      </span>
+      <div className="flex items-center">
+        <img src="/logo-image.png" alt="Logo" className="h-8 w-auto" />
+      </div>
       <h1 className="text-lg font-bold text-fg-primary text-center">
         모의고사 모드
       </h1>
