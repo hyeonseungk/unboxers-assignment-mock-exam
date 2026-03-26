@@ -14,6 +14,7 @@ interface ExamState {
   setSubjectiveAnswer: (questionNumber: number, value: string) => void;
   clearSubjectiveAnswer: (questionNumber: number) => void;
   startExam: () => void;
+  restartExam: (studentInfo?: StudentInfo | null) => void;
   resetExam: () => void;
 }
 
@@ -58,6 +59,15 @@ export const useExamStore = create<ExamState>((set) => ({
     }),
 
   startExam: () => set({ examStarted: true, examStartedAt: Date.now() }),
+
+  restartExam: (studentInfo) =>
+    set((state) => ({
+      studentInfo: studentInfo ?? state.studentInfo,
+      objectiveAnswers: {},
+      subjectiveAnswers: {},
+      examStarted: false,
+      examStartedAt: null,
+    })),
 
   resetExam: () =>
     set({

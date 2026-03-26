@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useExamStore } from "@/stores/useExamStore";
 import { useSubmitExamMutation } from "@/hooks/useSubmitExamMutation";
@@ -14,7 +14,7 @@ import { ResultItemGrid } from "@/components/result/ResultItemGrid";
 import { ResultActions } from "@/components/result/ResultActions";
 
 type ResultPhase = "complete" | "scanning" | "result";
-const SCAN_DURATION_MS = 60 * 60 * 1000;
+const SCAN_DURATION_MS = 3_000;
 
 function isResultPageState(
   state: ExamSubmitResponse | ResultPageState | null,
@@ -34,7 +34,9 @@ export function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const submitMutation = useSubmitExamMutation();
+  const hasRequestedGrading = useRef(false);
   const resetExam = useExamStore((s) => s.resetExam);
+  const restartExam = useExamStore((s) => s.restartExam);
   const studentInfo = useExamStore((s) => s.studentInfo);
   const objectiveAnswers = useExamStore((s) => s.objectiveAnswers);
   const subjectiveAnswers = useExamStore((s) => s.subjectiveAnswers);
@@ -69,8 +71,7 @@ export function ResultPage() {
     submitMode === "timeout" ? "scanning" : "complete",
   );
   const [scanError, setScanError] = useState<string | null>(null);
-  const [scanElapsed, setScanElapsed] = useState(false);
-  const [hasRequestedGrading, setHasRequestedGrading] = useState(false);
+  const [scanAttempt, setScanAttempt] = useState(0);
 
   useEffect(() => {
     if (!resultData && !submitPayload) {
@@ -79,47 +80,50 @@ export function ResultPage() {
   }, [resultData, submitPayload, navigate]);
 
   useEffect(() => {
-    if (phase !== "scanning") return;
-    setScanElapsed(false);
-    setHasRequestedGrading(false);
-    const timer = setTimeout(() => setScanElapsed(true), SCAN_DURATION_MS);
+    if (phase !== "scanning" || !resultData) return;
+    const timer = setTimeout(() => setPhase("result"), SCAN_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [phase, resultData]);
 
   useEffect(() => {
-    if (phase !== "scanning" || resultData || !submitPayload || hasRequestedGrading) return;
+    if (
+      phase !== "scanning" ||
+      resultData ||
+      !submitPayload ||
+      hasRequestedGrading.current
+    ) {
+      return;
+    }
 
-    setScanError(null);
-    setHasRequestedGrading(true);
+    hasRequestedGrading.current = true;
     submitMutation.mutate(submitPayload, {
       onSuccess: (data) => {
         setResultData(data);
       },
       onError: (error) => {
+        hasRequestedGrading.current = false;
         setScanError(error.message || "채점 요청에 실패했습니다. 다시 시도해주세요.");
       },
     });
-  }, [phase, resultData, submitPayload, submitMutation, hasRequestedGrading]);
-
-  useEffect(() => {
-    if (phase !== "scanning" || !scanElapsed || !resultData) return;
-    setPhase("result");
-  }, [phase, resultData, scanElapsed]);
+  }, [phase, resultData, submitPayload, submitMutation, scanAttempt]);
 
   const handleShowResult = useCallback(() => {
+    hasRequestedGrading.current = false;
     setScanError(null);
     setPhase("scanning");
+    setScanAttempt((prev) => prev + 1);
   }, []);
 
   const handleRetryScan = useCallback(() => {
+    hasRequestedGrading.current = false;
     setScanError(null);
-    setHasRequestedGrading(false);
+    setScanAttempt((prev) => prev + 1);
   }, []);
 
   const handleRetry = useCallback(() => {
-    resetExam();
-    navigate("/");
-  }, [resetExam, navigate]);
+    restartExam(previewSnapshot?.studentInfo ?? studentInfo);
+    navigate("/exam");
+  }, [navigate, previewSnapshot?.studentInfo, restartExam, studentInfo]);
 
   const handleGoHome = useCallback(() => {
     resetExam();
@@ -146,19 +150,38 @@ export function ResultPage() {
       )}
 
       {phase === "result" && resultData && (
-        <div className="h-full flex flex-col">
-          <div className="flex-1 overflow-y-auto px-6 py-8">
-            <div className="max-w-4xl mx-auto flex flex-col gap-6">
-              <ResultScoreCard
-                score={resultData.score}
-                correctCount={resultData.correctCount}
-                wrongCount={resultData.wrongCount}
-                unansweredCount={resultData.unansweredCount}
-              />
-              <ResultItemGrid results={resultData.results} />
-            </div>
+        <div className="relative h-full overflow-hidden bg-[#f6f4f1]">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full bg-[#fff0cc]/75 blur-3xl" />
+            <div className="absolute right-[-80px] top-[64px] h-[280px] w-[280px] rounded-full bg-[#e9f2ff]/80 blur-3xl" />
+            <div className="absolute bottom-[-120px] left-[32%] h-[260px] w-[260px] rounded-full bg-[#f5ecff]/40 blur-3xl" />
           </div>
-          <ResultActions onRetry={handleRetry} onGoHome={handleGoHome} />
+
+          <div className="relative flex h-full flex-col">
+            <div className="flex-1 overflow-y-auto px-6 py-8">
+              <div className="mx-auto flex max-w-[1180px] flex-col gap-6">
+                <div className="px-1">
+                  <h1 className="text-[32px] font-black leading-[1.12] tracking-[-0.06em] text-[#111111] sm:text-[38px]">
+                    채점 결과를 확인해보세요
+                  </h1>
+                  <p className="mt-3 max-w-[720px] text-[15px] leading-relaxed text-[#6c675e] sm:text-[16px]">
+                    맞은 문제와 오답을 빠르게 확인해보세요.
+                  </p>
+                </div>
+
+                <ResultScoreCard
+                  title={resultData.title}
+                  score={resultData.score}
+                  correctCount={resultData.correctCount}
+                  wrongCount={resultData.wrongCount}
+                  unansweredCount={resultData.unansweredCount}
+                  studentInfo={previewSnapshot?.studentInfo}
+                />
+                <ResultItemGrid results={resultData.results} />
+              </div>
+            </div>
+            <ResultActions onRetry={handleRetry} onGoHome={handleGoHome} />
+          </div>
         </div>
       )}
     </div>

@@ -17,10 +17,7 @@ export function useExamTimer(timeLimitSeconds: number): UseExamTimerReturn {
   const [remainingSeconds, setRemainingSeconds] = useState(timeLimitSeconds);
 
   useEffect(() => {
-    if (!examStartedAt) {
-      setRemainingSeconds(timeLimitSeconds);
-      return;
-    }
+    if (!examStartedAt) return;
 
     const tick = () => {
       const elapsed = Math.floor((Date.now() - examStartedAt) / 1000);
@@ -33,13 +30,15 @@ export function useExamTimer(timeLimitSeconds: number): UseExamTimerReturn {
     return () => clearInterval(interval);
   }, [examStartedAt, timeLimitSeconds]);
 
-  const percent = (remainingSeconds / timeLimitSeconds) * 100;
-  const isWarning = remainingSeconds <= WARNING_THRESHOLD && remainingSeconds > 0;
-  const isExpired = remainingSeconds <= 0 && examStartedAt !== null;
+  const activeRemainingSeconds = examStartedAt ? remainingSeconds : timeLimitSeconds;
+  const percent = (activeRemainingSeconds / timeLimitSeconds) * 100;
+  const isWarning =
+    activeRemainingSeconds <= WARNING_THRESHOLD && activeRemainingSeconds > 0;
+  const isExpired = activeRemainingSeconds <= 0 && examStartedAt !== null;
 
   return {
-    remainingSeconds,
-    formattedTime: formatTimer(remainingSeconds),
+    remainingSeconds: activeRemainingSeconds,
+    formattedTime: formatTimer(activeRemainingSeconds),
     percent,
     isWarning,
     isExpired,

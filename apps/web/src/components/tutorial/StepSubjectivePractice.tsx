@@ -50,7 +50,7 @@ export function StepSubjectivePractice({
 
   return (
     <div className="flex h-full flex-col items-center overflow-hidden px-8">
-      <div className="flex-1 pt-[10px]">
+      <div className="shrink-0">
         <TutorialSubjectivePracticePreview
           targetQuestion={TARGET_QUESTION}
           selectedQuestion={selectedQuestion}
@@ -63,7 +63,7 @@ export function StepSubjectivePractice({
         />
       </div>
 
-      <div className="mt-[18px] shrink-0 pb-[4px] text-center">
+      <div className="mt-[20px] shrink-0 text-center">
         <ChevronUp className="mx-auto size-[18px] stroke-[2.7] text-[#121212]" />
         <p className="mt-[6px] text-[14px] font-semibold tracking-[-0.02em] text-[#343434]">
           {practiceState === "completed"

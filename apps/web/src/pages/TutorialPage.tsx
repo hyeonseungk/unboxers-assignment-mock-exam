@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils/cn";
 import { TutorialHeader } from "@/components/tutorial/TutorialHeader";
@@ -8,7 +8,7 @@ import { StepOmrConcept } from "@/components/tutorial/StepOmrConcept";
 import { StepObjectivePractice } from "@/components/tutorial/StepObjectivePractice";
 import { StepSubjectivePractice } from "@/components/tutorial/StepSubjectivePractice";
 import { StepTimeWarning } from "@/components/tutorial/StepTimeWarning";
-import { StudentInfoModal } from "@/components/modal/StudentInfoModal";
+import { ConfirmDialog } from "@/components/modal/ConfirmDialog";
 import { useExamStore } from "@/stores/useExamStore";
 import type { StudentInfo } from "@/lib/types/exam";
 
@@ -29,29 +29,30 @@ export function TutorialPage() {
   const navigate = useNavigate();
   const setStudentInfo = useExamStore((s) => s.setStudentInfo);
   const resetExam = useExamStore((s) => s.resetExam);
+  const startExam = useExamStore((s) => s.startExam);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [canGoNext, setCanGoNext] = useState(true);
-  const [showStudentInfoModal, setShowStudentInfoModal] = useState(false);
-  const hasNavigated = useRef(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
+  const [showStartConfirm, setShowStartConfirm] = useState(false);
 
-  const handleStudentInfoSubmit = useCallback(
+  const handleQuickStart = useCallback(
     (info: StudentInfo) => {
       resetExam();
       setStudentInfo(info);
-      setShowStudentInfoModal(false);
+      startExam();
       navigate("/exam");
     },
-    [navigate, setStudentInfo, resetExam],
+    [navigate, resetExam, setStudentInfo, startExam],
   );
 
   const goNext = useCallback(() => {
     if (currentStep >= TOTAL_STEPS - 1) {
-      setShowStudentInfoModal(true);
+      setShowStartConfirm(true);
       return;
     }
-    hasNavigated.current = true;
+    setHasNavigated(true);
     setDirection("next");
     const nextStep = currentStep + 1;
     setCurrentStep(nextStep);
@@ -60,7 +61,7 @@ export function TutorialPage() {
 
   const goPrev = useCallback(() => {
     if (currentStep <= 0) return;
-    hasNavigated.current = true;
+    setHasNavigated(true);
     setDirection("prev");
     const prevStep = currentStep - 1;
     setCurrentStep(prevStep);
@@ -68,11 +69,16 @@ export function TutorialPage() {
   }, [currentStep]);
 
   const handleSkip = useCallback(() => {
-    handleStudentInfoSubmit(SKIP_STUDENT_INFO);
-  }, [handleStudentInfoSubmit]);
+    setShowStartConfirm(true);
+  }, []);
+
+  const handleStartConfirm = useCallback(() => {
+    setShowStartConfirm(false);
+    handleQuickStart(SKIP_STUDENT_INFO);
+  }, [handleQuickStart]);
 
   const handleGoHome = useCallback(() => {
-    hasNavigated.current = false;
+    setHasNavigated(false);
     setCurrentStep(0);
     setDirection("next");
     setCanGoNext(true);
@@ -108,7 +114,7 @@ export function TutorialPage() {
           key={currentStep}
           className={cn(
             "h-full",
-            hasNavigated.current &&
+            hasNavigated &&
               (direction === "next"
                 ? "animate-slide-in-right"
                 : "animate-slide-in-left"),
@@ -127,10 +133,15 @@ export function TutorialPage() {
         onSkip={handleSkip}
       />
 
-      <StudentInfoModal
-        isOpen={showStudentInfoModal}
-        onClose={() => setShowStudentInfoModal(false)}
-        onSubmit={handleStudentInfoSubmit}
+      <ConfirmDialog
+        isOpen={showStartConfirm}
+        onClose={() => setShowStartConfirm(false)}
+        onConfirm={handleStartConfirm}
+        title="시험을 시작할까요?"
+        message="확인을 누르면 시험 화면으로 이동하면서 타이머가 바로 시작됩니다. 시험 시간이 끝나면 답안은 자동으로 제출됩니다."
+        confirmText="시험 시작"
+        cancelText="취소"
+        variant="warning"
       />
     </div>
   );

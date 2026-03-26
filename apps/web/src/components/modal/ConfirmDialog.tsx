@@ -13,6 +13,7 @@ interface ConfirmDialogProps {
   confirmDisabled?: boolean;
   cancelDisabled?: boolean;
   errorMessage?: string;
+  hideCancel?: boolean;
 }
 
 export function ConfirmDialog({
@@ -27,6 +28,7 @@ export function ConfirmDialog({
   confirmDisabled = false,
   cancelDisabled = false,
   errorMessage,
+  hideCancel = false,
 }: ConfirmDialogProps) {
   const titleId = "confirm-dialog-title";
   const descId = "confirm-dialog-desc";
@@ -54,19 +56,21 @@ export function ConfirmDialog({
           </div>
         )}
         <div className="flex gap-4 mt-8">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="flex-1"
-            onClick={onClose}
-            disabled={cancelDisabled}
-          >
-            {cancelText}
-          </Button>
+          {!hideCancel && (
+            <Button
+              variant="secondary"
+              size="lg"
+              className="flex-1"
+              onClick={onClose}
+              disabled={cancelDisabled}
+            >
+              {cancelText}
+            </Button>
+          )}
           <Button
             variant={confirmVariant}
             size="lg"
-            className="flex-1"
+            className={hideCancel ? "w-full" : "flex-1"}
             onClick={onConfirm}
             disabled={confirmDisabled}
           >

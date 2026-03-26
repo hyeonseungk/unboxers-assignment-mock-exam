@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useExamStore } from "@/stores/useExamStore";
 import { useExamTimer } from "@/hooks/useExamTimer";
+import { useSubmitExamMutation } from "@/hooks/useSubmitExamMutation";
 import { ExamHeader } from "@/components/exam/ExamHeader";
 import { OmrCard } from "@/components/exam/OmrCard";
 import { ExamKeypadPanel } from "@/components/exam/ExamKeypadPanel";
@@ -11,7 +12,6 @@ import { ConfirmDialog } from "@/components/modal/ConfirmDialog";
 import { HelpModal } from "@/components/modal/HelpModal";
 import type {
   AnswerItem,
-  ExamSubmitMode,
   ResultPageState,
 } from "@/lib/types/exam";
 import { SUBJECTIVE_DISPLAY_START } from "@/lib/constants/exam";
@@ -19,8 +19,18 @@ import { SUBJECTIVE_DISPLAY_START } from "@/lib/constants/exam";
 const EXAM_TIME_SECONDS = 60;
 const MAX_SUBJECTIVE_DIGITS = 3;
 
+interface PreparedResultState {
+  previewSnapshot: NonNullable<ResultPageState["previewSnapshot"]>;
+  submitPayload: NonNullable<ResultPageState["submitPayload"]>;
+}
+
+interface TimeoutResultState extends PreparedResultState {
+  resultData?: NonNullable<ResultPageState["resultData"]>;
+}
+
 export function OmrPage() {
   const navigate = useNavigate();
+  const submitMutation = useSubmitExamMutation();
   const hasSubmitted = useRef(false);
   const hasAttemptedAutoSubmit = useRef(false);
 
@@ -42,6 +52,11 @@ export function OmrPage() {
   const [keypadValue, setKeypadValue] = useState("");
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isTimeoutSubmitting, setIsTimeoutSubmitting] = useState(false);
+  const [showTimeoutResultModal, setShowTimeoutResultModal] = useState(false);
+  const [timeoutErrorMessage, setTimeoutErrorMessage] = useState<string | null>(null);
+  const [timeoutResultState, setTimeoutResultState] =
+    useState<TimeoutResultState | null>(null);
 
   // 학생 정보 없으면 튜토리얼로 리다이렉트
   useEffect(() => {
@@ -92,11 +107,8 @@ export function OmrPage() {
     [objectiveAnswers],
   );
 
-  // 제출 처리
-  const handleSubmit = useCallback((submitMode: ExamSubmitMode = "manual") => {
-    if (!studentInfo || hasSubmitted.current) return;
-    hasSubmitted.current = true;
-
+  const prepareSubmissionState = useCallback((): PreparedResultState | null => {
+    if (!studentInfo) return null;
     const nextSubjectiveAnswers = getSubmittedSubjectiveAnswers();
     const draftAnswer =
       selectedSubjective !== null
@@ -112,8 +124,7 @@ export function OmrPage() {
     }
 
     const answers = buildAnswers(nextSubjectiveAnswers);
-    const resultState: ResultPageState = {
-      submitMode,
+    return {
       submitPayload: {
         name: studentInfo.name,
         school: studentInfo.school,
@@ -128,8 +139,6 @@ export function OmrPage() {
         subjectiveAnswers: nextSubjectiveAnswers,
       },
     };
-
-    navigate("/result", { state: resultState });
   }, [
     studentInfo,
     getSubmittedSubjectiveAnswers,
@@ -138,18 +147,77 @@ export function OmrPage() {
     setSubjectiveAnswer,
     buildAnswers,
     objectiveAnswers,
-    navigate,
   ]);
+
+  const handleSubmit = useCallback(() => {
+    if (hasSubmitted.current) return;
+    const preparedResultState = prepareSubmissionState();
+    if (!preparedResultState) return;
+    hasSubmitted.current = true;
+
+    navigate("/result", {
+      state: {
+        submitMode: "manual",
+        ...preparedResultState,
+      } satisfies ResultPageState,
+    });
+  }, [navigate, prepareSubmissionState]);
+
+  const submitTimedOutExam = useCallback(
+    (preparedResultState?: PreparedResultState | null) => {
+      const nextPreparedResultState =
+        preparedResultState ??
+        (timeoutResultState
+          ? {
+              previewSnapshot: timeoutResultState.previewSnapshot,
+              submitPayload: timeoutResultState.submitPayload,
+            }
+          : prepareSubmissionState());
+
+      if (!nextPreparedResultState) return;
+
+      setTimeoutResultState(nextPreparedResultState);
+      setIsTimeoutSubmitting(true);
+      setShowEndConfirm(false);
+      setShowHelp(false);
+      setShowTimeoutResultModal(false);
+      setTimeoutErrorMessage(null);
+
+      submitMutation.mutate(nextPreparedResultState.submitPayload, {
+        onSuccess: (data) => {
+          setIsTimeoutSubmitting(false);
+          setTimeoutResultState({
+            ...nextPreparedResultState,
+            resultData: data,
+          });
+          setShowTimeoutResultModal(true);
+        },
+        onError: (error) => {
+          setIsTimeoutSubmitting(false);
+          setTimeoutErrorMessage(
+            error.message || "자동 제출에 실패했습니다. 다시 시도해주세요.",
+          );
+          setShowTimeoutResultModal(true);
+        },
+      });
+    },
+    [prepareSubmissionState, submitMutation, timeoutResultState],
+  );
 
   // 타이머 만료 시 자동 제출
   useEffect(() => {
     if (!isExpired || hasAttemptedAutoSubmit.current) return;
     hasAttemptedAutoSubmit.current = true;
+    const preparedResultState = prepareSubmissionState();
+    if (!preparedResultState) return;
+
+    hasSubmitted.current = true;
     const timeoutId = window.setTimeout(() => {
-      handleSubmit("timeout");
+      submitTimedOutExam(preparedResultState);
     }, 0);
+
     return () => window.clearTimeout(timeoutId);
-  }, [isExpired, handleSubmit]);
+  }, [isExpired, prepareSubmissionState, submitTimedOutExam]);
 
   // 주관식 문항 선택
   const handleSubjectiveSelect = useCallback(
@@ -193,12 +261,36 @@ export function OmrPage() {
     EXAM_TIME_SECONDS >= 60
       ? `${Math.floor(EXAM_TIME_SECONDS / 60)}분`
       : `${EXAM_TIME_SECONDS}초`;
+  const examInteractionDisabled = !examStarted || isTimeoutSubmitting;
+
+  const handleTimeoutResultConfirm = useCallback(() => {
+    if (!timeoutResultState?.resultData) return;
+
+    setShowTimeoutResultModal(false);
+    navigate("/result", {
+      state: {
+        submitMode: "manual",
+        previewSnapshot: timeoutResultState.previewSnapshot,
+        submitPayload: timeoutResultState.submitPayload,
+        resultData: timeoutResultState.resultData,
+      } satisfies ResultPageState,
+    });
+  }, [navigate, timeoutResultState]);
+
+  const handleTimeoutRetry = useCallback(() => {
+    submitTimedOutExam(timeoutResultState);
+  }, [submitTimedOutExam, timeoutResultState]);
 
   if (!studentInfo) return null;
 
   return (
     <div className="h-full flex flex-col">
-      <ExamHeader onEndExam={() => setShowEndConfirm(true)} />
+      <ExamHeader
+        onEndExam={() => {
+          if (isTimeoutSubmitting) return;
+          setShowEndConfirm(true);
+        }}
+      />
 
       {/* 메인 영역 */}
       <div className="flex-1 overflow-hidden flex gap-4 px-6 pb-2">
@@ -211,7 +303,7 @@ export function OmrPage() {
             selectedSubjective={selectedSubjective}
             onObjectiveSelect={setObjectiveAnswer}
             onSubjectiveSelect={handleSubjectiveSelect}
-            disabled={!examStarted}
+            disabled={examInteractionDisabled}
           />
           {!examStarted && <ExamWaitingOverlay onStart={startExam} />}
         </div>
@@ -223,7 +315,7 @@ export function OmrPage() {
           onKeyPress={handleKeyPress}
           onBackspace={handleBackspace}
           onComplete={handleComplete}
-          disabled={!examStarted}
+          disabled={examInteractionDisabled}
         />
       </div>
 
@@ -234,19 +326,44 @@ export function OmrPage() {
         isWarning={isWarning}
         examStarted={examStarted}
         timeLimitLabel={timeLimitLabel}
-        onHelpClick={() => setShowHelp(true)}
+        onHelpClick={() => {
+          if (isTimeoutSubmitting) return;
+          setShowHelp(true);
+        }}
       />
 
       {/* 종료 확인 모달 */}
       <ConfirmDialog
         isOpen={showEndConfirm}
         onClose={() => setShowEndConfirm(false)}
-        onConfirm={() => handleSubmit("manual")}
+        onConfirm={handleSubmit}
         title="시험을 종료하고 답안을 제출할까요?"
         message="종료하면 더 이상 답안을 수정할 수 없습니다."
         confirmText="제출하기"
         cancelText="계속 풀기"
         variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={showTimeoutResultModal}
+        onClose={() => {}}
+        onConfirm={
+          timeoutErrorMessage ? handleTimeoutRetry : handleTimeoutResultConfirm
+        }
+        title={
+          timeoutErrorMessage
+            ? "자동 제출에 실패했어요"
+            : "시험 시간이 종료되었어요"
+        }
+        message={
+          timeoutErrorMessage
+            ? "네트워크 문제로 자동 제출을 완료하지 못했습니다. 다시 시도해주세요."
+            : "답안이 자동 제출되었습니다. 시험 결과를 확인해보세요."
+        }
+        confirmText={timeoutErrorMessage ? "다시 시도" : "시험 결과 확인"}
+        variant={timeoutErrorMessage ? "warning" : "info"}
+        errorMessage={timeoutErrorMessage ?? undefined}
+        hideCancel
       />
 
       {/* 도움말 모달 */}
