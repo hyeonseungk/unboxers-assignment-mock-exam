@@ -23,3 +23,4 @@ export const OMR_BUBBLE_SIZE = "h-[36px] w-[17px] rounded-[999px]";
 export const OMR_BUBBLE_SLOT_WIDTH = "w-[17px]";
 export const OMR_BUBBLE_COLUMN_GAP = "gap-[4px]";
 export const OMR_TITLE_TEXT = "text-[15px] font-bold tracking-[0.45em]";
+export const OMR_MARK_GRID_ROWS = "grid-rows-[repeat(10,minmax(0,1fr))]";

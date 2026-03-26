@@ -35,13 +35,21 @@ export function NumberKeypad({
 
       {/* Key grid */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Special keys (disabled) */}
+        {/* Special keys */}
         {SPECIAL_KEYS.map((key) => (
           <button
             key={key}
             type="button"
-            disabled
-            className="h-14 rounded-xl bg-surface-secondary text-fg-muted text-xl font-medium opacity-40 select-none"
+            onClick={() => onKeyPress(key)}
+            disabled={disabled}
+            className={cn(
+              "h-14 rounded-xl bg-surface-secondary text-fg-secondary text-xl font-medium",
+              "border border-line",
+              "active:scale-95 active:bg-background-secondary",
+              "transition-all duration-75",
+              "select-none touch-manipulation",
+              disabled && "opacity-40 pointer-events-none",
+            )}
           >
             {key}
           </button>

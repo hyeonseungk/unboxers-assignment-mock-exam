@@ -1,10 +1,14 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useExamStore } from "@/stores/useExamStore";
 import { useExamTimer } from "@/hooks/useExamTimer";
 import { useSubmitExamMutation } from "@/hooks/useSubmitExamMutation";
 import { ExamHeader } from "@/components/exam/ExamHeader";
-import { OmrCard } from "@/components/exam/OmrCard";
+import {
+  OMR_CARD_BASE_HEIGHT,
+  OMR_CARD_BASE_WIDTH,
+  OmrCard,
+} from "@/components/exam/OmrCard";
 import { ExamKeypadPanel } from "@/components/exam/ExamKeypadPanel";
 import { ExamTimerBar } from "@/components/exam/ExamTimerBar";
 import { ExamWaitingOverlay } from "@/components/exam/ExamWaitingOverlay";
@@ -17,7 +21,21 @@ import type {
 import { SUBJECTIVE_DISPLAY_START } from "@/lib/constants/exam";
 
 const EXAM_TIME_SECONDS = 60;
-const MAX_SUBJECTIVE_DIGITS = 3;
+const MAX_SUBJECTIVE_INPUT_LENGTH = 3;
+const OMR_CARD_MAX_SCALE = 1.04;
+const OMR_CARD_VIEWPORT_PADDING_X = 24;
+const OMR_CARD_VIEWPORT_PADDING_Y = 24;
+const SUBMITTABLE_SUBJECTIVE_ANSWER_PATTERN = /^-?\d+$/;
+
+function parseSubjectiveAnswerForSubmission(value: string) {
+  if (!SUBMITTABLE_SUBJECTIVE_ANSWER_PATTERN.test(value)) {
+    return null;
+  }
+
+  const parsedValue = Number(value);
+
+  return Number.isInteger(parsedValue) ? parsedValue : null;
+}
 
 interface PreparedResultState {
   previewSnapshot: NonNullable<ResultPageState["previewSnapshot"]>;
@@ -33,6 +51,7 @@ export function OmrPage() {
   const submitMutation = useSubmitExamMutation();
   const hasSubmitted = useRef(false);
   const hasAttemptedAutoSubmit = useRef(false);
+  const omrViewportRef = useRef<HTMLDivElement>(null);
 
   const studentInfo = useExamStore((s) => s.studentInfo);
   const examStarted = useExamStore((s) => s.examStarted);
@@ -57,6 +76,7 @@ export function OmrPage() {
   const [timeoutErrorMessage, setTimeoutErrorMessage] = useState<string | null>(null);
   const [timeoutResultState, setTimeoutResultState] =
     useState<TimeoutResultState | null>(null);
+  const [omrCardScale, setOmrCardScale] = useState(1);
 
   // 학생 정보 없으면 튜토리얼로 리다이렉트
   useEffect(() => {
@@ -93,13 +113,17 @@ export function OmrPage() {
       }
 
       for (const [num, value] of Object.entries(nextSubjectiveAnswers)) {
-        if (value !== "") {
-          answers.push({
-            answerType: "subjective",
-            number: Number(num) - (SUBJECTIVE_DISPLAY_START - 1),
-            answer: Number(value),
-          });
-        }
+        if (value === "") continue;
+
+        const parsedAnswer = parseSubjectiveAnswerForSubmission(value);
+
+        if (parsedAnswer === null) continue;
+
+        answers.push({
+          answerType: "subjective",
+          number: Number(num) - (SUBJECTIVE_DISPLAY_START - 1),
+          answer: parsedAnswer,
+        });
       }
 
       return answers;
@@ -237,7 +261,7 @@ export function OmrPage() {
   const handleKeyPress = useCallback(
     (key: string) => {
       setKeypadValue((prev) => {
-        if (prev.length >= MAX_SUBJECTIVE_DIGITS) return prev;
+        if (prev.length >= MAX_SUBJECTIVE_INPUT_LENGTH) return prev;
         return prev + key;
       });
     },
@@ -281,7 +305,39 @@ export function OmrPage() {
     submitTimedOutExam(timeoutResultState);
   }, [submitTimedOutExam, timeoutResultState]);
 
+  useLayoutEffect(() => {
+    const viewport = omrViewportRef.current;
+
+    if (!viewport) return;
+
+    const updateScale = () => {
+      const nextScale = Math.min(
+        OMR_CARD_MAX_SCALE,
+        (viewport.clientWidth - OMR_CARD_VIEWPORT_PADDING_X) / OMR_CARD_BASE_WIDTH,
+        (viewport.clientHeight - OMR_CARD_VIEWPORT_PADDING_Y) / OMR_CARD_BASE_HEIGHT,
+      );
+
+      const safeScale = Number.isFinite(nextScale) && nextScale > 0 ? nextScale : 1;
+
+      setOmrCardScale((prevScale) =>
+        Math.abs(prevScale - safeScale) < 0.001 ? prevScale : safeScale,
+      );
+    };
+
+    updateScale();
+
+    const resizeObserver = new ResizeObserver(updateScale);
+    resizeObserver.observe(viewport);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   if (!studentInfo) return null;
+
+  const scaledOmrCardWidth = OMR_CARD_BASE_WIDTH * omrCardScale;
+  const scaledOmrCardHeight = OMR_CARD_BASE_HEIGHT * omrCardScale;
 
   return (
     <div className="h-full flex flex-col">
@@ -295,17 +351,35 @@ export function OmrPage() {
       {/* 메인 영역 */}
       <div className="flex-1 overflow-hidden flex gap-4 px-6 pb-2">
         {/* OMR 카드 */}
-        <div className="flex-1 relative min-w-0">
-          <OmrCard
-            studentInfo={studentInfo}
-            objectiveAnswers={objectiveAnswers}
-            subjectiveAnswers={subjectiveAnswers}
-            selectedSubjective={selectedSubjective}
-            onObjectiveSelect={setObjectiveAnswer}
-            onSubjectiveSelect={handleSubjectiveSelect}
-            disabled={examInteractionDisabled}
-          />
-          {!examStarted && <ExamWaitingOverlay onStart={startExam} />}
+        <div ref={omrViewportRef} className="relative flex-1 min-h-0 min-w-0">
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              width: `${scaledOmrCardWidth}px`,
+              height: `${scaledOmrCardHeight}px`,
+            }}
+          >
+            <div
+              className="absolute left-0 top-0 origin-top-left"
+              style={{
+                width: `${OMR_CARD_BASE_WIDTH}px`,
+                height: `${OMR_CARD_BASE_HEIGHT}px`,
+                transform: `scale(${omrCardScale})`,
+              }}
+            >
+              <OmrCard
+                studentInfo={studentInfo}
+                objectiveAnswers={objectiveAnswers}
+                subjectiveAnswers={subjectiveAnswers}
+                selectedSubjective={selectedSubjective}
+                onObjectiveSelect={setObjectiveAnswer}
+                onSubjectiveSelect={handleSubjectiveSelect}
+                disabled={examInteractionDisabled}
+              />
+            </div>
+
+            {!examStarted && <ExamWaitingOverlay onStart={startExam} />}
+          </div>
         </div>
 
         {/* 키패드 패널 */}

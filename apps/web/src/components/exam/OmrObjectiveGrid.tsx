@@ -13,6 +13,7 @@ import {
   OMR_BORDER_T,
   OMR_BUBBLE_COLUMN_GAP,
   OMR_LINE,
+  OMR_MARK_GRID_ROWS,
   OMR_NUMBER_STRIP_GRID,
   OMR_SECTION_BG,
   OMR_STRIP_BG,
@@ -39,7 +40,7 @@ export function OmrObjectiveGrid({
   );
 
   return (
-    <div className="grid h-full w-full grid-rows-[40px_1fr]">
+    <div className="grid h-full w-full grid-rows-[34px_1fr]">
       <div className={cn("flex items-center justify-center", OMR_BORDER_B, OMR_LINE)}>
         <p className={cn(OMR_TITLE_TEXT, OMR_TEXT)}>객 관 식 답 안</p>
       </div>
@@ -79,45 +80,69 @@ function ObjectiveColumn({
   highlightTop: boolean;
   highlightBottom: boolean;
 }) {
-  const topQuestions = questions.slice(0, 5);
-  const bottomQuestions = questions.slice(5);
-
   return (
     <div className={cn("grid min-w-0", OMR_NUMBER_STRIP_GRID, hasLeftDivider && OMR_BORDER_L, OMR_LINE)}>
-      <div className={cn("grid h-full grid-rows-[1fr_11px_1fr]", OMR_BORDER_R, OMR_LINE, OMR_STRIP_BG)}>
-        <QuestionNumberGroup questions={topQuestions} />
-        <div />
-        <QuestionNumberGroup questions={bottomQuestions} />
-      </div>
+      <QuestionNumberColumn questions={questions} />
 
-      <div className="grid min-w-0 h-full grid-rows-[1fr_11px_1fr]">
-        <div className={cn("min-w-0 px-[6px] py-[2px]", highlightTop && OMR_SECTION_BG)}>
-          <ObjectiveGroup
-            questions={topQuestions}
-            answers={answers}
-            onSelect={onSelect}
-            disabled={disabled}
-          />
-        </div>
-        <div className="relative h-[11px]">
-          {highlightTop && <div className={cn("absolute inset-x-0 top-0 h-1/2", OMR_SECTION_BG)} />}
-          {highlightBottom && (
-            <div className={cn("absolute inset-x-0 bottom-0 h-1/2", OMR_SECTION_BG)} />
-          )}
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
-            <div className={cn("w-full border-dashed", OMR_BORDER_T, OMR_LINE)} />
-          </div>
-        </div>
-        <div className={cn("min-w-0 px-[6px] py-[2px]", highlightBottom && OMR_SECTION_BG)}>
-          <ObjectiveGroup
-            questions={bottomQuestions}
-            answers={answers}
-            onSelect={onSelect}
-            disabled={disabled}
-          />
-        </div>
+      <div className="relative min-w-0 h-full">
+        <ObjectiveSectionBackground
+          highlightTop={highlightTop}
+          highlightBottom={highlightBottom}
+        />
+        <ObjectiveGroup
+          questions={questions}
+          answers={answers}
+          onSelect={onSelect}
+          disabled={disabled}
+        />
       </div>
     </div>
+  );
+}
+
+function QuestionNumberColumn({ questions }: { questions: number[] }) {
+  return (
+    <div className={cn("grid h-full", OMR_MARK_GRID_ROWS, OMR_BORDER_R, OMR_LINE, OMR_STRIP_BG)}>
+      {questions.map((questionNumber) => (
+        <div
+          key={`number-strip-${questionNumber}`}
+          className="flex h-full items-center justify-center"
+        >
+          <span className={cn("text-[12px] font-semibold", OMR_TEXT)}>{questionNumber}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ObjectiveSectionBackground({
+  highlightTop,
+  highlightBottom,
+}: {
+  highlightTop: boolean;
+  highlightBottom: boolean;
+}) {
+  return (
+    <>
+      {highlightTop && (
+        <div className={cn("pointer-events-none absolute inset-x-0 top-0 bottom-1/2", OMR_SECTION_BG)} />
+      )}
+      {highlightBottom && (
+        <div
+          className={cn("pointer-events-none absolute inset-x-0 top-1/2 bottom-0", OMR_SECTION_BG)}
+        />
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 h-[11px] -translate-y-1/2">
+        {highlightTop && <div className={cn("absolute inset-x-0 top-0 h-1/2", OMR_SECTION_BG)} />}
+        {highlightBottom && (
+          <div className={cn("absolute inset-x-0 bottom-0 h-1/2", OMR_SECTION_BG)} />
+        )}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+          <div className={cn("w-full border-dashed", OMR_BORDER_T, OMR_LINE)} />
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -133,7 +158,7 @@ function ObjectiveGroup({
   disabled: boolean;
 }) {
   return (
-    <div className="flex h-full flex-col justify-between py-[2px]">
+    <div className={cn("relative grid h-full min-w-0 px-[6px]", OMR_MARK_GRID_ROWS)}>
       {questions.map((questionNumber) => (
         <ObjectiveRow
           key={questionNumber}
@@ -143,21 +168,6 @@ function ObjectiveGroup({
           onSelect={onSelect}
           disabled={disabled}
         />
-      ))}
-    </div>
-  );
-}
-
-function QuestionNumberGroup({ questions }: { questions: number[] }) {
-  return (
-    <div className="flex h-full flex-col justify-between px-[1px] py-[2px]">
-      {questions.map((questionNumber) => (
-        <div
-          key={`number-strip-${questionNumber}`}
-          className="flex h-[36px] items-center justify-center"
-        >
-          <span className={cn("text-[12px] font-semibold", OMR_TEXT)}>{questionNumber}</span>
-        </div>
       ))}
     </div>
   );
@@ -177,7 +187,7 @@ const ObjectiveRow = memo(function ObjectiveRow({
   disabled: boolean;
 }) {
   return (
-    <div className={cn("flex h-[36px] items-center justify-center", OMR_BUBBLE_COLUMN_GAP)}>
+    <div className={cn("flex h-full items-center justify-center", OMR_BUBBLE_COLUMN_GAP)}>
       {choices.map((choice) => (
         <OmrBubble
           key={`${questionNumber}-${choice}`}

@@ -13,6 +13,7 @@ import {
   OMR_GUIDE_TEXT,
   OMR_LINE,
   OMR_LINE_BG,
+  OMR_MARK_GRID_ROWS,
   OMR_TEXT,
   OMR_TITLE_BLUE,
 } from "./omrStyles";
@@ -162,13 +163,17 @@ function DigitColumn({
   prefix: string;
 }) {
   return (
-    <div className="flex h-full flex-col items-center justify-between py-[2px]">
+    <div className={cn("grid h-full justify-items-center", OMR_MARK_GRID_ROWS)}>
       {Array.from({ length: 10 }, (_, number) => (
-        <MarkBubble
+        <div
           key={`${prefix}-${number}`}
-          number={number}
-          selected={selectedNumber === number}
-        />
+          className="flex h-full items-center justify-center"
+        >
+          <MarkBubble
+            number={number}
+            selected={selectedNumber === number}
+          />
+        </div>
       ))}
     </div>
   );

@@ -29,7 +29,7 @@ export function OmrSubjectiveList({
   disabled = false,
 }: OmrSubjectiveListProps) {
   return (
-    <div className="grid h-full w-full grid-rows-[40px_1fr]">
+    <div className="grid h-full w-full grid-rows-[34px_1fr]">
       <div className={cn("flex items-center justify-center", OMR_BORDER_B, OMR_LINE)}>
         <p className={cn(OMR_TITLE_TEXT, OMR_TEXT)}>주 관 식 답 안</p>
       </div>

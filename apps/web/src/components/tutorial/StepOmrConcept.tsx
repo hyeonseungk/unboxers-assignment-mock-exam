@@ -1,4 +1,8 @@
-import { OmrCard } from "@/components/exam/OmrCard";
+import {
+  OMR_CARD_BASE_HEIGHT,
+  OMR_CARD_BASE_WIDTH,
+  OmrCard,
+} from "@/components/exam/OmrCard";
 import type { StudentInfo } from "@/lib/types/exam";
 import { TutorialExamPaperIllustration } from "./TutorialExamPaperIllustration";
 
@@ -22,8 +26,8 @@ export function StepOmrConcept() {
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 origin-center"
             style={{
-              width: "960px",
-              height: "610px",
+              width: `${OMR_CARD_BASE_WIDTH}px`,
+              height: `${OMR_CARD_BASE_HEIGHT}px`,
               transform: "translate(-50%, -50%) scale(0.52)",
             }}
           >

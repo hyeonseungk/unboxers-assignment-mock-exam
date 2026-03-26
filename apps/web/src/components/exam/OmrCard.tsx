@@ -13,6 +13,9 @@ import {
   OMR_NUMBER_STRIP_GRID,
 } from "./omrStyles";
 
+export const OMR_CARD_BASE_WIDTH = 960;
+export const OMR_CARD_BASE_HEIGHT = 610;
+
 interface OmrCardProps {
   studentInfo: StudentInfo;
   objectiveAnswers: Record<number, number>;

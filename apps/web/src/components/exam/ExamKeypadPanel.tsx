@@ -48,7 +48,7 @@ export function ExamKeypadPanel({
         onComplete={onComplete}
         showCompleteButton={hasSelection && inputValue.length > 0}
         disabled={disabled || !hasSelection}
-        placeholder={hasSelection ? "숫자를 입력하세요" : "문항을 선택하세요"}
+        placeholder={hasSelection ? "숫자 또는 기호를 입력하세요" : "문항을 선택하세요"}
       />
     </div>
   );
