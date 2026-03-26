@@ -1,14 +1,13 @@
 import type { StudentInfo } from "@/lib/types/exam";
 import { cn } from "@/lib/utils/cn";
 import { OmrStudentInfo } from "./OmrStudentInfo";
+import { OmrObjectiveFooterBars } from "./OmrObjectiveFooterBars";
 import { OmrObjectiveGrid } from "./OmrObjectiveGrid";
 import { OmrSubjectiveList } from "./OmrSubjectiveList";
 import {
   OMR_BORDER_L,
   OMR_BORDER_R,
   OMR_BORDER_Y,
-  OMR_BUBBLE_COLUMN_GAP,
-  OMR_BUBBLE_SLOT_WIDTH,
   OMR_CARD_BG,
   OMR_NOTE,
   OMR_NUMBER_STRIP_GRID,
@@ -104,40 +103,7 @@ function StudentFooterBars() {
 }
 
 function ObjectiveFooterBars() {
-  return (
-    <div className="grid grid-cols-3">
-      {Array.from({ length: 3 }, (_, index) => (
-        <div
-          key={`objective-footer-${index}`}
-          className={cn(
-            "grid min-w-0",
-            OMR_NUMBER_STRIP_GRID,
-            index > 0 && "border-l-[1.5px] border-transparent",
-          )}
-        >
-          <div />
-          <div className="px-[6px]">
-            <BubbleAlignedFooterBars count={5} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function BubbleAlignedFooterBars({ count }: { count: number }) {
-  return (
-    <div className={cn("flex items-end justify-center", OMR_BUBBLE_COLUMN_GAP)}>
-      {Array.from({ length: count }, (_, index) => (
-        <div
-          key={`footer-slot-${count}-${index}`}
-          className={cn("flex justify-center", OMR_BUBBLE_SLOT_WIDTH)}
-        >
-          <FooterBar />
-        </div>
-      ))}
-    </div>
-  );
+  return <OmrObjectiveFooterBars />;
 }
 
 function FooterBar() {

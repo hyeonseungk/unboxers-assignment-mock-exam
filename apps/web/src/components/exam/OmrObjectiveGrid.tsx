@@ -99,8 +99,14 @@ function ObjectiveColumn({
             disabled={disabled}
           />
         </div>
-        <div className="flex items-center">
-          <div className={cn("w-full border-dashed", OMR_BORDER_T, OMR_LINE)} />
+        <div className="relative h-[11px]">
+          {highlightTop && <div className={cn("absolute inset-x-0 top-0 h-1/2", OMR_SECTION_BG)} />}
+          {highlightBottom && (
+            <div className={cn("absolute inset-x-0 bottom-0 h-1/2", OMR_SECTION_BG)} />
+          )}
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+            <div className={cn("w-full border-dashed", OMR_BORDER_T, OMR_LINE)} />
+          </div>
         </div>
         <div className={cn("min-w-0 px-[6px] py-[2px]", highlightBottom && OMR_SECTION_BG)}>
           <ObjectiveGroup

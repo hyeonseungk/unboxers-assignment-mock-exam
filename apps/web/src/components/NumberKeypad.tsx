@@ -112,7 +112,7 @@ export function NumberKeypad({
             "select-none touch-manipulation",
             "active:scale-[0.98] transition-all duration-75",
             value
-              ? "bg-accent text-accent-foreground"
+              ? "bg-[linear-gradient(90deg,#6F90FF_0%,#5E86F3_46%,#4D6FC2_100%)] text-white shadow-[0_14px_28px_rgba(77,111,194,0.28)]"
               : "bg-surface-secondary text-fg-muted pointer-events-none",
           )}
         >

@@ -47,3 +47,10 @@ export interface ExamSubmitResponse {
   unansweredCount: number;
   results: ExamResultItem[];
 }
+
+export type ExamSubmitMode = "manual" | "timeout";
+
+export interface ResultPageState {
+  resultData: ExamSubmitResponse;
+  submitMode?: ExamSubmitMode;
+}

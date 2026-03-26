@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { cn } from "@/lib/utils/cn";
-import { NumberKeypad } from "@/components/NumberKeypad";
 import { ChevronUp } from "lucide-react";
-import { SUBJECTIVE_COUNT } from "@/lib/constants/exam";
+import { TutorialSubjectivePracticePreview } from "./TutorialSubjectivePracticePreview";
 
 type PracticeState = "initial" | "selected" | "completed";
 
@@ -20,138 +18,83 @@ export function StepSubjectivePractice({
   const [savedAnswer, setSavedAnswer] = useState("");
 
   const handleSelectQ4 = () => {
-    if (practiceState === "completed") return;
     setPracticeState("selected");
-    setInputValue("");
+    setInputValue(savedAnswer);
   };
 
   const handleKeyPress = (key: string) => {
     if (practiceState !== "selected") return;
     setInputValue((prev) => {
-      if (prev.length >= 3) return prev;
+      if (prev.length >= 4) return prev;
+      if (key === "." && (prev.length === 0 || prev.includes("."))) return prev;
+      if ((key === "/" || key === "-") && prev.length > 0) return prev;
       return prev + key;
     });
   };
 
   const handleBackspace = () => {
+    if (practiceState !== "selected") return;
     setInputValue((prev) => prev.slice(0, -1));
   };
 
   const handleComplete = () => {
+    if (practiceState !== "selected") return;
     if (!inputValue) return;
     setSavedAnswer(inputValue);
     setPracticeState("completed");
+    setInputValue("");
     onStateChange(true);
   };
 
+  const selectedQuestion = practiceState === "selected" ? TARGET_QUESTION : null;
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Content: List + Keypad */}
-      <div className="flex-1 flex justify-center gap-8 px-8 pt-6 overflow-hidden">
-        {/* Left: Subjective question list */}
-        <div className="w-96 bg-surface border border-line rounded-2xl overflow-y-auto">
-          <div className="divide-y divide-line">
-            {Array.from({ length: SUBJECTIVE_COUNT }, (_, i) => i + 1).map(
-              (num) => {
-                const isTarget = num === TARGET_QUESTION;
-                const isSelected =
-                  isTarget && practiceState === "selected";
-                const hasAnswer = isTarget && savedAnswer;
-
-                return (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={isTarget ? handleSelectQ4 : undefined}
-                    disabled={!isTarget}
-                    className={cn(
-                      "w-full flex items-center gap-4 px-5 py-3.5 text-left",
-                      "transition-all duration-100",
-                      isSelected && "bg-accent-light border-l-4 border-accent",
-                      isTarget && !isSelected
-                        ? "cursor-pointer active:bg-background-secondary"
-                        : "",
-                      !isTarget && "opacity-60 cursor-default",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "text-base font-semibold shrink-0 w-8",
-                        isTarget ? "text-accent" : "text-fg-primary",
-                      )}
-                    >
-                      {num}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-base flex-1",
-                        hasAnswer ? "text-fg-primary font-medium" : "text-fg-muted",
-                      )}
-                    >
-                      {hasAnswer ? savedAnswer : "터치하여 주관식 답안 입력"}
-                    </span>
-                  </button>
-                );
-              },
-            )}
-          </div>
-        </div>
-
-        {/* Right: Keypad */}
-        <div className="w-72 shrink-0">
-          <NumberKeypad
-            value={practiceState === "selected" ? inputValue : ""}
-            onKeyPress={handleKeyPress}
-            onBackspace={handleBackspace}
-            onComplete={handleComplete}
-            showCompleteButton={practiceState === "selected"}
-            disabled={practiceState !== "selected"}
-            placeholder={
-              practiceState === "selected"
-                ? `${TARGET_QUESTION}번 답안을 입력하세요`
-                : "답안 입력을 시작하세요"
-            }
-          />
-        </div>
+    <div className="flex h-full flex-col items-center overflow-hidden px-8">
+      <div className="flex-1 pt-[10px]">
+        <TutorialSubjectivePracticePreview
+          targetQuestion={TARGET_QUESTION}
+          selectedQuestion={selectedQuestion}
+          inputValue={inputValue}
+          savedAnswer={savedAnswer}
+          onSelectQuestion={handleSelectQ4}
+          onKeyPress={handleKeyPress}
+          onBackspace={handleBackspace}
+          onComplete={handleComplete}
+        />
       </div>
 
-      {/* Instruction area */}
-      <div className="shrink-0 text-center space-y-2 px-8 pb-4">
-        {practiceState !== "completed" ? (
-          <>
-            <ChevronUp className="size-5 mx-auto text-fg-muted" />
-            <p className="text-base text-fg-muted">
-              다음으로 넘어가려면 직접 해보세요
-            </p>
-          </>
-        ) : (
-          <p className="text-base text-fg-muted">
-            좋아요! 다음으로 넘어가볼까요?
-          </p>
-        )}
+      <div className="mt-[18px] shrink-0 pb-[4px] text-center">
+        <ChevronUp className="mx-auto size-[18px] stroke-[2.7] text-[#121212]" />
+        <p className="mt-[6px] text-[14px] font-semibold tracking-[-0.02em] text-[#343434]">
+          {practiceState === "completed"
+            ? "좋아요! 다음으로 넘어가볼까요?"
+            : "다음으로 넘어가려면 직접 해보세요"}
+        </p>
 
-        <p className="text-2xl font-bold text-fg-primary">
-          {practiceState === "initial" &&
-            "주관식 답안을 입력하려면 입력할 곳을 터치해요"}
-          {practiceState === "selected" && "아무 숫자나 입력하고"}
-          {practiceState === "completed" && "입력한 답안을 수정하려면"}
-        </p>
-        <p className="text-xl font-bold text-fg-primary">
-          {practiceState === "initial" && (
-            <>
-              <span className="text-accent">{TARGET_QUESTION}번</span> 문제의
-              답안을 입력해볼까요?
-            </>
-          )}
-          {practiceState === "selected" && (
-            <>
-              <span className="text-accent">완료</span> 버튼을 눌러서 답안을
-              작성해요
-            </>
-          )}
-          {practiceState === "completed" &&
-            "해당 문제를 다시 한 번 터치해요"}
-        </p>
+        <div className="mt-[18px] space-y-[2px] text-[31px] font-black leading-[1.23] tracking-[-0.04em] text-[#141414]">
+          <p>
+            {practiceState === "initial" &&
+              "주관식 답안을 입력하려면 입력할 곳을 터치해요"}
+            {practiceState === "selected" && "아무 숫자나 입력하고"}
+            {practiceState === "completed" && "입력한 답안을 수정하려면"}
+          </p>
+          <p>
+            {practiceState === "initial" && (
+              <>
+                <span className="text-[#5E86F3]">{TARGET_QUESTION}번 문제</span>의
+                답안을 입력해볼까요?
+              </>
+            )}
+            {practiceState === "selected" && (
+              <>
+                <span className="text-[#5E86F3]">완료</span> 버튼을 눌러서 답안을
+                작성해요
+              </>
+            )}
+            {practiceState === "completed" &&
+              "해당 문제를 다시 한 번 터치해요"}
+          </p>
+        </div>
       </div>
     </div>
   );

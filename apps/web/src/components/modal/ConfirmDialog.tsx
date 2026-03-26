@@ -10,6 +10,9 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
+  confirmDisabled?: boolean;
+  cancelDisabled?: boolean;
+  errorMessage?: string;
 }
 
 export function ConfirmDialog({
@@ -21,6 +24,9 @@ export function ConfirmDialog({
   confirmText = "확인",
   cancelText = "취소",
   variant = "info",
+  confirmDisabled = false,
+  cancelDisabled = false,
+  errorMessage,
 }: ConfirmDialogProps) {
   const titleId = "confirm-dialog-title";
   const descId = "confirm-dialog-desc";
@@ -42,12 +48,18 @@ export function ConfirmDialog({
         <p id={descId} className="mt-3 text-base text-fg-secondary leading-relaxed">
           {message}
         </p>
+        {errorMessage && (
+          <div className="mt-4 rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700">
+            {errorMessage}
+          </div>
+        )}
         <div className="flex gap-4 mt-8">
           <Button
             variant="secondary"
             size="lg"
             className="flex-1"
             onClick={onClose}
+            disabled={cancelDisabled}
           >
             {cancelText}
           </Button>
@@ -55,10 +67,8 @@ export function ConfirmDialog({
             variant={confirmVariant}
             size="lg"
             className="flex-1"
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
+            onClick={onConfirm}
+            disabled={confirmDisabled}
           >
             {confirmText}
           </Button>

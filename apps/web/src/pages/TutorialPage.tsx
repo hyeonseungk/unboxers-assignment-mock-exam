@@ -64,6 +64,13 @@ export function TutorialPage() {
     setShowStudentInfoModal(true);
   }, []);
 
+  const handleGoHome = useCallback(() => {
+    hasNavigated.current = false;
+    setCurrentStep(0);
+    setDirection("next");
+    setCanGoNext(true);
+  }, []);
+
   const handleStepComplete = useCallback((complete: boolean) => {
     setCanGoNext(complete);
   }, []);
@@ -86,8 +93,8 @@ export function TutorialPage() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <TutorialHeader />
+    <div className="flex h-full flex-col bg-[#f6f4f1]">
+      <TutorialHeader onHome={handleGoHome} />
 
       <div className="flex-1 overflow-hidden">
         <div

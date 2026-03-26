@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useExamStore } from "@/stores/useExamStore";
-import type { ExamSubmitResponse } from "@/lib/types/exam";
+import type { ExamSubmitResponse, ResultPageState } from "@/lib/types/exam";
 import { SubmitCompleteView } from "@/components/result/SubmitCompleteView";
 import { ScanAnimationView } from "@/components/result/ScanAnimationView";
 import { ResultScoreCard } from "@/components/result/ResultScoreCard";
@@ -14,9 +14,19 @@ export function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const resetExam = useExamStore((s) => s.resetExam);
-  const resultData = location.state as ExamSubmitResponse | null;
+  const navigationState = location.state as ExamSubmitResponse | ResultPageState | null;
+  const resultData =
+    navigationState && "resultData" in navigationState
+      ? navigationState.resultData
+      : navigationState;
+  const submitMode =
+    navigationState && "resultData" in navigationState
+      ? navigationState.submitMode ?? "manual"
+      : "manual";
 
-  const [phase, setPhase] = useState<ResultPhase>("complete");
+  const [phase, setPhase] = useState<ResultPhase>(
+    submitMode === "timeout" ? "scanning" : "complete",
+  );
 
   // No result data → redirect to home
   useEffect(() => {
