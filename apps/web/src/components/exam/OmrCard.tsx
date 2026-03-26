@@ -21,6 +21,7 @@ interface OmrCardProps {
   onObjectiveSelect: (questionNumber: number, choice: number) => void;
   onSubjectiveSelect: (displayNumber: number) => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export function OmrCard({
@@ -31,12 +32,14 @@ export function OmrCard({
   onObjectiveSelect,
   onSubjectiveSelect,
   disabled = false,
+  className,
 }: OmrCardProps) {
   return (
     <div
       className={cn(
         "flex h-full w-full flex-col rounded-[28px] bg-[#FCF8EA] p-[12px] shadow-[0_8px_22px_rgba(29,33,48,0.12)]",
         OMR_CARD_BG,
+        className,
       )}
     >
       <div className="grid min-h-0 flex-1 grid-cols-[236px_minmax(0,1fr)_252px]">

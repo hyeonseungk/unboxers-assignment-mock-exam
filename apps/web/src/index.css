@@ -320,6 +320,7 @@
   --animate-slide-in-left: slide-in-left 0.3s ease-out forwards;
   --animate-timer-warning: timer-warning 1s ease-in-out infinite;
   --animate-scan-line: scan-line 3s linear forwards;
+  --animate-scan-rig: scan-rig 1.45s ease-in-out infinite alternate;
   --animate-fade-in-up: fade-in-up 0.3s ease-out both;
   --animate-scale-in: scale-in 0.3s ease-out both;
 }
@@ -403,6 +404,15 @@ a,
   }
   to {
     transform: translateX(100%);
+  }
+}
+
+@keyframes scan-rig {
+  from {
+    left: 0;
+  }
+  to {
+    left: calc(100% - 42px);
   }
 }
 

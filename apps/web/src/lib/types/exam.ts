@@ -50,7 +50,15 @@ export interface ExamSubmitResponse {
 
 export type ExamSubmitMode = "manual" | "timeout";
 
+export interface ResultPreviewSnapshot {
+  studentInfo: StudentInfo;
+  objectiveAnswers: Record<number, number>;
+  subjectiveAnswers: Record<number, string>;
+}
+
 export interface ResultPageState {
-  resultData: ExamSubmitResponse;
+  resultData?: ExamSubmitResponse;
   submitMode?: ExamSubmitMode;
+  previewSnapshot?: ResultPreviewSnapshot;
+  submitPayload?: ExamSubmitRequest;
 }

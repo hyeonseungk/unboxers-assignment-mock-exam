@@ -13,6 +13,13 @@ import { useExamStore } from "@/stores/useExamStore";
 import type { StudentInfo } from "@/lib/types/exam";
 
 const TOTAL_STEPS = 5;
+const SKIP_STUDENT_INFO: StudentInfo = {
+  name: "신희철",
+  school: "서울초등학교",
+  grade: 2,
+  studentNumber: 12,
+  seatNumber: 24,
+};
 
 function isInteractive(step: number) {
   return step === 2 || step === 3;
@@ -61,8 +68,8 @@ export function TutorialPage() {
   }, [currentStep]);
 
   const handleSkip = useCallback(() => {
-    setShowStudentInfoModal(true);
-  }, []);
+    handleStudentInfoSubmit(SKIP_STUDENT_INFO);
+  }, [handleStudentInfoSubmit]);
 
   const handleGoHome = useCallback(() => {
     hasNavigated.current = false;
